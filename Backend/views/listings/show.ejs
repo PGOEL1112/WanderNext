@@ -1,0 +1,94 @@
+<%- layout("layouts/boilerplate") %>
+<div class="listing-detail">
+  <img src="<%= listing.image %>" alt="<%= listing.title %>">
+    <div class="listing-text">
+        <!-- Accessing Details -->
+        <h2><%= listing.title %></h2>
+        <p><strong>Location:</strong> <%= listing.location %>, <%= listing.country %></p>
+        <p><strong>Price:</strong> ₹<%= listing.price.toLocaleString("en-IN") %>/night</p>
+        <p><%= listing.description %></p>
+
+
+        <div class="action-buttons">
+        <a class="btn edit" href="/listings/<%= listing._id %>/edit">Edit</a>
+        <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="inline-form">
+          <button class="btn delete">Delete</button>
+        </form>
+        <a href="/listings" class="btn back">← Back</a>
+      </div>
+    </div>
+
+
+    <!-- ===================== Review Form ===================== -->
+    <div class="review-section">
+        <h2 class="review-heading">✨ Share Your WanderNext Experience ✨</h2>
+
+        <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="review-form  needs-validation">
+            <div class="rating-group">
+                <label class="rating-label">Your Rating</label>
+                <div class="stars">
+                    <input type="radio" id="star5" name="review[rating]" value="5"><label for="star5">★</label>
+                    <input type="radio" id="star4" name="review[rating]" value="4"><label for="star4">★</label>
+                    <input type="radio" id="star3" name="review[rating]" value="3"><label for="star3">★</label>
+                    <input type="radio" id="star2" name="review[rating]" value="2"><label for="star2">★</label>
+                    <input type="radio" id="star1" name="review[rating]" value="1"><label for="star1">★</label>
+                </div>
+            </div>
+
+            <div class="comment-group">
+                <label for="comment">Your Review</label>
+                <textarea id="comment" name="review[comment]" placeholder="Tell others what you loved (or didn’t)..." required></textarea>
+                <div class="invalid-feedback">Please Submit your some experience for review</div>
+            </div>
+
+            <div class="submit-btn">
+                <button type="submit">Submit Review</button>
+            </div>
+        </form>
+    </div>
+
+
+<!-- ===================== Display Submitted Reviews ===================== -->
+    <div class="submitted-reviews">
+        <h3 class="submitted-heading">What Travelers Say</h3>
+
+        <% if (listing.reviews.length === 0) { %>
+            <p class="no-reviews">No reviews yet — be the first to share your experience!</p>
+        <% } else { %>
+            <% listing.reviews.forEach((review) => { %>
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="stars-display">
+                            <% for(let i = 0; i < review.rating; i++) { %>
+                                <span class="star-filled">★</span>
+                            <% } %>
+                            <% for(let i = review.rating; i < 5; i++) { %>
+                                <span class="star-empty">★</span>
+                            <% } %>
+                        </div>
+                        <p class="review-date">
+                            <% if (review.createdAt) { %>
+                                <%= new Date(review.createdAt).toLocaleDateString("en-IN", { 
+                                year: "numeric", 
+                                month: "long", 
+                                day: "numeric" 
+                                }) %>
+                            <% } else { %>
+                                <em>Recently added</em>
+                            <% } %>
+                        </p>
+                    </div>
+
+                    <div class="review-body">
+                        <p><%= review.comment %></p>
+                    </div>
+
+                    <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST" class="delete-review">
+                        <button type="submit" class="delete-btn">Delete</button>
+                    </form>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+
+</div>

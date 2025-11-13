@@ -1,0 +1,12 @@
+<%- layout("layouts/boilerplate") %>
+
+<div class="error-container">
+  <div class="error-box">
+    <div class="error-icon">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <h2>Oops! Something went wrong</h2>
+    <p><%= message || "An unexpected error occurred. Please try again later." %></p>
+    <a href="/listings" class="btn back">← Back to Home</a>
+  </div>
+</div>
