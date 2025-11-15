@@ -1,0 +1,220 @@
+<%- layout("./layouts/boilerplate") %>
+
+<!-- ========================= HERO SECTION ========================= -->
+<section class="hero-section">
+  <div class="hero-content">
+    <h1 class="fade-in-up">Discover Your Next Stay</h1>
+    <p class="fade-in-up delay-1">Explore unique destinations, hotels, and experiences around the world.</p>
+
+    <a href="/listings" class="btn btn-lg btn-warning explore-btn fade-in-up delay-2">
+      Explore Listings <i class="fa-solid fa-arrow-right"></i>
+    </a>
+  </div>
+</section>
+
+<!-- ========================= CATEGORY SECTION ========================= -->
+<section class="categories container my-5">
+  <h2 class="section-title">Browse by Category</h2>
+
+  <div class="row category-grid mt-4">
+    <% const categories = [
+      {icon: "fa-mountain-sun", name: "Mountain Stays"},
+      {icon: "fa-umbrella-beach", name: "Beach Resorts"},
+      {icon: "fa-city", name: "City Hotels"},
+      {icon: "fa-fire-burner", name: "Cabins & Villas"}
+    ] %>
+
+    <% categories.forEach(c => { %>
+      <div class="col-lg-3 col-md-6 col-6 mb-4">
+        <div class="category-card">
+          <i class="fa-solid <%= c.icon %>"></i>
+          <h5><%= c.name %></h5>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<!-- ========================= POPULAR DESTINATIONS ========================= -->
+<section class="popular container my-5">
+  <h2 class="section-title">Popular Destinations</h2>
+
+  <div class="row mt-4">
+    <% const destinations = [
+      {
+        title: "Goa",
+        info: "Beach • Nightlife • Adventure",
+        img: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=900&q=60"
+      },
+      {
+        title: "Manali",
+        info: "Mountains • Snow • Nature",
+        img: "https://images.unsplash.com/photo-1705593412987-f7322bffae98?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8bWFuYWxpJTIwaW1hZ2V8ZW58MHx8MHx8fDA%3D"
+      },
+      {
+        title: "Rajasthan",
+        info: "Culture • Palaces • Heritage",
+        img: "https://images.unsplash.com/photo-1548013146-72479768bada?w=900&q=60"
+      }
+    ]; %>
+
+    <% destinations.forEach(d => { %>
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="destination-card">
+          <div class="dest-img-wrapper">
+            <img src="<%= d.img %>" alt="<%= d.title %>">
+            <div class="img-overlay"></div>
+          </div>
+
+          <div class="dest-info">
+            <h4><%= d.title %></h4>
+            <p><%= d.info %></p>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<!-- ========================= CALL TO ACTION ========================= -->
+<section class="cta-section">
+  <h2>Ready to explore amazing stays?</h2>
+  <a href="/listings" class="btn btn-lg btn-light explore-now-btn">
+    Start Exploring
+  </a>
+</section>
+
+
+<!-- ========================= ENHANCED STYLING ========================= -->
+<style>
+  /* HERO (Medium Size) */
+.hero-section {
+  height: 55vh;                    /* ↓ Reduced from 90vh to medium size */
+  background: url("https://source.unsplash.com/1600x900/?travel,resort") center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  position: relative;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.hero-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(1px);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+}
+
+.hero-content h1 {
+  font-size: 2.6rem;          /* Smaller but still bold */
+  font-weight: 700;
+}
+
+.hero-content p {
+  font-size: 1.1rem;
+  margin-top: 10px;
+}
+
+.explore-btn {
+  padding: 10px 28px;
+  border-radius: 40px;
+  margin-top: 12px;
+}
+
+  /* CAT CARDS */
+  .category-card {
+    background: white;
+    padding: 28px;
+    border-radius: 18px;
+    text-align: center;
+    transition: 0.3s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    cursor: pointer;
+  }
+
+  .category-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  }
+  .category-card i {
+    font-size: 2.4rem;
+    color: #e7a425;
+    margin-bottom: 12px;
+  }
+
+  /* DESTINATION SECTION */
+  .destination-card {
+    border-radius: 15px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transition: 0.4s;
+    cursor: pointer;
+  }
+  .destination-card:hover {
+    transform: translateY(-8px);
+  }
+
+  .dest-img-wrapper {
+    position: relative;
+    height: 230px;
+  }
+
+  .dest-img-wrapper img {
+    width: 100%;
+    height: 230px;
+    object-fit: cover;
+    transition: 0.4s ease;
+  }
+
+  .destination-card:hover img {
+    transform: scale(1.07);
+  }
+
+  .img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.45));
+  }
+
+  .dest-info {
+    padding: 12px 15px;
+  }
+
+  .dest-info h4 {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  /* CTA */
+  .cta-section {
+    background: #242424;
+    color: white;
+    padding: 70px 0;
+    text-align: center;
+    border-radius: 10px;
+    margin-top: 65px;
+  }
+
+  /* Animations */
+  .fade-in-up {
+    opacity: 0;
+    transform: translateY(25px);
+    animation: fadeUp 0.8s forwards;
+  }
+  .delay-1 { animation-delay: 0.3s; }
+  .delay-2 { animation-delay: 0.6s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

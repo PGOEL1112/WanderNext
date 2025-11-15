@@ -415,7 +415,7 @@ footer::before {
 }
 
 .nav-links a:hover {
-  color: #ffcc00;
+  color: #0b0900;
 }
 
 /* 🍔 Hamburger Menu */
@@ -874,10 +874,225 @@ footer::before {
   background: #e8414f;
 }
 
-.flash-msg {
-  transition: opacity 0.5s ease-out;
+/* === FLASH MESSAGE STYLING === */
+.flash-container {
+  right: 20px;
+  top: 80px;
+  z-index: 2000;
 }
-.flash-msg.fade {
+
+.flash-msg {
   opacity: 0;
+  transform: translateY(-20px);
+  animation: slideDown 0.5s ease-out forwards;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+/* ✅ Smooth slide-down animation */
+@keyframes slideDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ❌ Smooth fade-out before removal */
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.flash-msg.fade-out {
+  animation: fadeOut 0.6s forwards;
+}
+
+/* Card Hover Animation */
+/* ===============================
+   GLOBAL AUTH PAGE STYLING
+=================================*/
+
+.auth-container {
+  min-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.auth-card {
+  width: 360px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 35px 30px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeIn 0.6s ease-out 1;
+}
+
+/* Card Hover */
+.auth-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+}
+
+/* Title animation */
+.animated-title {
+  animation: slideDown 0.6s ease forwards;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade In effect */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===============================
+   INPUT STYLING
+=================================*/
+
+.auth-input {
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  padding: 12px 14px;
+  font-size: 15px;
+  transition: 0.3s;
+}
+
+.auth-input:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 6px rgba(0,102,255,0.4);
+}
+
+/* Input Hover */
+.auth-input:hover {
+  border-color: #555;
+}
+
+/* ===============================
+   BUTTONS
+=================================*/
+
+.auth-btn {
+  background: linear-gradient(135deg, #0066ff, #0044cc);
+  border: none;
+  color: white;
+  padding: 12px;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.auth-btn:hover {
+  background: linear-gradient(135deg, #0044cc, #002a80);
+  transform: translateY(-3px);
+  box-shadow: 0px 6px 20px rgba(0, 76, 255, 0.4);
+}
+
+/* ===============================
+   PASSWORD TOGGLE EYE
+=================================*/
+
+  .password-wrapper {
+  position: relative;
+}
+
+.password-wrapper .password-toggle {
+  position: absolute;
+  right: 12px;           /* distance from the right edge */
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #444;
+  font-size: 16px;       /* adjust size if needed */
+  z-index: 2;
+}
+
+.password-wrapper input {
+  padding-right: 40px; /* same as eye icon width + spacing */
+}
+
+.toggle-password,
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #444;
+  transition: color 0.3s, transform 0.2s;
+}
+
+.toggle-password:hover,
+.password-toggle:hover {
+  color: #0066ff;
+  transform: translateY(-50%) scale(1.15);
+}
+
+/* ===============================
+   LINKS
+=================================*/
+
+.link,
+.small {
+  text-decoration: none;
+  color: #0066ff;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.link:hover,
+.small:hover {
+  color: #003399;
+  text-decoration: underline;
+}
+
+/* ===============================
+   FLASH MESSAGES ANIMATION
+=================================*/
+
+.flash-msg.fade-out {
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+
+/* ------------------------------------------
+   ICON INSIDE INPUT FIELDS
+-------------------------------------------*/
+
+.input-icon-group {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #475569;
+  font-size: 16px;
+  pointer-events: none;
+  transition: 0.3s;
+}
+
+/* Input padding to avoid overlap with icon */
+.input-icon-group .auth-input {
+  padding-left: 40px !important;
+}
+
+/* Icon glow on focus */
+.input-icon-group .auth-input:focus + .toggle-password,
+.input-icon-group .auth-input:focus ~ .password-toggle,
+.input-icon-group .auth-input:focus ~ .input-icon {
+  color: #2563eb;
+  text-shadow: 0 0 6px rgba(37, 99, 235, 0.5);
 }
 

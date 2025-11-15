@@ -4,22 +4,26 @@
     <div class="listing-text">
         <!-- Accessing Details -->
         <h2><%= listing.title %></h2>
+        <p><strong>Owned By:</strong> <%= listing.owner.username %></p>
         <p><strong>Location:</strong> <%= listing.location %>, <%= listing.country %></p>
         <p><strong>Price:</strong> ₹<%= listing.price.toLocaleString("en-IN") %>/night</p>
         <p><%= listing.description %></p>
 
 
+        <% if(currentUser && currentUser._id.equals(listing.owner._id)) { %>
         <div class="action-buttons">
-        <a class="btn edit" href="/listings/<%= listing._id %>/edit">Edit</a>
-        <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="inline-form">
-          <button class="btn delete">Delete</button>
-        </form>
-        <a href="/listings" class="btn back">← Back</a>
-      </div>
+            <a class="btn edit" href="/listings/<%= listing._id %>/edit">Edit</a>
+            <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="inline-form">
+            <button class="btn delete">Delete</button>
+            </form>
+            <a href="/listings" class="btn back">← Back</a>
+        </div>
+        <% } %>
     </div>
 
 
     <!-- ===================== Review Form ===================== -->
+    <% if(currentUser) { %>
     <div class="review-section">
         <h2 class="review-heading">✨ Share Your WanderNext Experience ✨</h2>
 
@@ -46,6 +50,7 @@
             </div>
         </form>
     </div>
+    <% } %>
 
 
 <!-- ===================== Display Submitted Reviews ===================== -->
@@ -58,6 +63,9 @@
             <% listing.reviews.forEach((review) => { %>
                 <div class="review-card">
                     <div class="review-header">
+                        <div class="review-body">
+                            <p><strong>@<%= review.author.username %></strong></p>
+
                         <div class="stars-display">
                             <% for(let i = 0; i < review.rating; i++) { %>
                                 <span class="star-filled">★</span>
@@ -65,6 +73,7 @@
                             <% for(let i = review.rating; i < 5; i++) { %>
                                 <span class="star-empty">★</span>
                             <% } %>
+                        </div>
                         </div>
                         <p class="review-date">
                             <% if (review.createdAt) { %>
@@ -82,10 +91,13 @@
                     <div class="review-body">
                         <p><%= review.comment %></p>
                     </div>
-
-                    <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST" class="delete-review">
-                        <button type="submit" class="delete-btn">Delete</button>
+                    
+                    <% if (currentUser && review.author && (review.author._id ? review.author._id.toString() : review.author.toString()) === currentUser._id.toString()) { %>
+                    <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST">
+                        <button class="btn btn-danger btn-sm">Delete</button>
                     </form>
+                    <% } %>
+
                 </div>
             <% }) %>
         <% } %>

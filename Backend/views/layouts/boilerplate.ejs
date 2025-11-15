@@ -35,27 +35,51 @@
 
     <!-- Navigation Links -->
     <nav class="nav-links">
-      <a href="/listings">Home</a>
-      <a href="/listings/new">Add Listing</a>
+      <a href="/" class="btn btn-sm btn-outline-light ms-3">Home</a>
+      <a href="/listings/new" class="btn btn-sm btn-outline-light ms-3">Add Listing</a>
+      
+      <% if (!currentUser) { %>
+      <a href="/login" class="btn btn-sm btn-outline-light ms-3">Login</a>
+      <a href="/register" class="btn btn-sm btn-warning text-dark ms-2">Register</a>
+
+      <% } else { %>
+
+      <!-- Show User Name -->
+      <span class="btn btn-sm text-light ms-3">
+        <i class="fa-solid fa-user"></i> <%= currentUser.username %>
+      </span>
+
+      <!-- Logout Button triggers modal -->
+      <button class="btn btn-sm btn-danger ms-3" data-bs-toggle="modal" data-bs-target="#logoutModal">
+        Logout
+      </button>
+
+      <% } %>
     </nav>
   </header>
 
-  <!-- ✅ Flash Messages  -->
-  <div class="container mt-3">
-    <% if (locals.success && locals.success.length > 0) { %>
+  <!-- ✅ Flash Messages -->
+<div class="container mt-3">
+  <% if (success && success.length > 0) { %>
+    <% success.forEach(msg => { %>
       <div class="alert alert-success alert-dismissible fade show flash-msg" role="alert">
-        <i class="fa-solid fa-circle-check"></i> <%= locals.success %>
+        <i class="fa-solid fa-circle-check"></i> <%= msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
-    <% } %>
+    <% }) %>
+  <% } %>
 
-    <% if (locals.error && locals.error.length > 0) { %>
+  <% if (error && error.length > 0) { %>
+    <% error.forEach(msg => { %>
       <div class="alert alert-danger alert-dismissible fade show flash-msg" role="alert">
-        <i class="fa-solid fa-triangle-exclamation"></i> <%= locals.error %>
+        <i class="fa-solid fa-triangle-exclamation"></i> <%= msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
-    <% } %>
-  </div>
+    <% }) %>
+  <% } %>
+  
+</div>
+
 
   <main class="container">
     <%- body %>
@@ -89,6 +113,30 @@
     </div>
   </footer>
 
+  <!-- Logout Confirmation Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Logout</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        Are you sure you want to logout?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a href="/logout" class="btn btn-danger">Logout</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -107,11 +155,21 @@
       const flashMessages = document.querySelectorAll(".flash-msg");
       flashMessages.forEach((msg) => {
         setTimeout(() => {
-          msg.classList.add("fade");
-          setTimeout(() => msg.remove(), 500);
+          msg.classList.add("fade-out");
+          setTimeout(() => msg.remove(), 600);
         }, 3000);
       });
     });
+
+    function togglePassword() {
+      let password = document.getElementById("password");
+      password.type = password.type === "password" ? "text" : "password";
+    }
+
+    function toggleRegPassword() {
+      let password = document.getElementById("regpassword");
+      password.type = password.type === "password" ? "text" : "password";
+    }
   </script>
 
   <script src="/Js/script.js"></script>

@@ -1,0 +1,38 @@
+<%- layout("layouts/boilerplate") %>
+
+<div class="auth-container">
+  <div class="auth-card">
+
+    <h2 class="text-center mb-4 auth-title">
+      <i class="fa-solid fa-right-to-bracket me-2"></i> Login
+    </h2>
+
+
+    <form action="/login" method="POST">
+
+      <div class="input-group mb-3 input-icon-group">
+        <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+        <input type="text" name="username" class="form-control auth-input" placeholder="Username" required>
+      </div>
+
+      <div class="input-group mb-3 input-icon-group password-wrapper">
+        <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+        <input type="password" id="password" name="password" class="form-control auth-input" placeholder="Password" required>
+        <span class="toggle-password" onclick="togglePassword()">
+          <i class="fa-solid fa-eye"></i>
+        </span>
+      </div>
+
+
+      <button class="btn auth-btn w-100">Login</button>
+
+      <div class="text-center mt-3">
+        <a href="/forgot-password" class="link">Forgot Password?</a>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+
+
