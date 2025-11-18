@@ -15,11 +15,17 @@ const listentingSchema = new Schema({
         required : true,
     },
 
-    image : {
-        type : String,
-        required : true,
-        
+    image: {
+    url: {
+        type: String,
+        required: true
     },
+    filename: {
+        type: String,
+        required: true
+    }
+},
+
 
     price : {
         type : Number,

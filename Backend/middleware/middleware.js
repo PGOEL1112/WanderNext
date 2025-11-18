@@ -1,7 +1,7 @@
 const Review = require("../models/reviews");
+const Listing = require("../models/listing");   // ✅ FIX ADDED
 const ExpressError = require("../utils/ExpressError");
-const {listingSchema, reviewSchema} = require("../schema");
-
+const { listingSchema, reviewSchema } = require("../schema");
 
 module.exports.isLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated()) {
@@ -12,31 +12,26 @@ module.exports.isLoggedIn = (req, res, next) => {
     next();
 };
 
-module.exports.validateListing = (req,res, next) => {
-    const {error}= listingSchema.validate(req.body);
-    // Handling Error Via JOI
-    if(error){
+module.exports.validateListing = (req, res, next) => {
+    const { error } = listingSchema.validate(req.body);
+    if (error) {
         const errMsg = error.details.map((ele) => ele.message).join(",");
         throw new ExpressError(400, errMsg);
     }
-    else {
-        next();
-    }
-}; 
-
-module.exports.validateReviews = (req, res, next) => {
-  let { error } = reviewSchema.validate(req.body);
-  if (error) {
-    let errMsg = error.details.map((ele) => ele.message).join(",");
-    throw new ExpressError(400, errMsg);
-  } else {
     next();
-  }
 };
 
+module.exports.validateReviews = (req, res, next) => {
+    let { error } = reviewSchema.validate(req.body);
+    if (error) {
+        let errMsg = error.details.map((ele) => ele.message).join(",");
+        throw new ExpressError(400, errMsg);
+    }
+    next();
+};
 
-module.exports.saveRedirectUrl = (req,res,next) => {
-    if(req.session.redirectUrl){
+module.exports.saveRedirectUrl = (req, res, next) => {
+    if (req.session.redirectUrl) {
         res.locals.redirectUrl = req.session.redirectUrl;
     }
     next();
@@ -44,7 +39,7 @@ module.exports.saveRedirectUrl = (req,res,next) => {
 
 module.exports.isOwner = async (req, res, next) => {
     const { id } = req.params;
-    const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id); // ✅ now works
 
     if (!listing) {
         req.flash("error", "❌ Listing not found!");
@@ -83,7 +78,6 @@ module.exports.isReviewAuthor = async (req, res, next) => {
         req.flash("error", "Review has no author field!");
         return res.redirect(`/listings/${id}`);
     }
-
 
     if (!review.author.equals(req.user._id)) {
         req.flash("error", "You are not the author of this review!");
