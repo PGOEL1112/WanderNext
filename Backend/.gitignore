@@ -1,0 +1,3 @@
+# Ignore environment variables
+.env
+Backend/.env   # if your .env is inside the Backend folder
