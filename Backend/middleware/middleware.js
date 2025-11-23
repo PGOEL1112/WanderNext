@@ -13,13 +13,14 @@ module.exports.isLoggedIn = (req, res, next) => {
 };
 
 module.exports.validateListing = (req, res, next) => {
-    const { error } = listingSchema.validate(req.body);
-    if (error) {
-        const errMsg = error.details.map((ele) => ele.message).join(",");
-        throw new ExpressError(400, errMsg);
-    }
-    next();
+  const { error } = listingSchema.validate(req.body); // using Joi or similar
+  if (error) {
+    req.flash("error", error.details.map(el => el.message).join(", "));
+    return res.redirect("back");
+  }
+  next();
 };
+
 
 module.exports.validateReviews = (req, res, next) => {
     let { error } = reviewSchema.validate(req.body);

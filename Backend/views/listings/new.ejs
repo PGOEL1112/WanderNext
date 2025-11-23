@@ -5,45 +5,92 @@
     <h2 class="text-center mb-4">Create New Listing</h2>
 
     <form method="POST" action="/listings" class="needs-validation" novalidate enctype="multipart/form-data">
+
+      <!-- Title -->
       <div class="mb-3">
         <label for="title" class="form-label">Title</label>
         <input type="text" id="title" name="listing[title]" class="form-control" placeholder="Enter listing title" required>
         <div class="invalid-feedback">Please enter a title.</div>
       </div>
 
+      <!-- Description -->
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>
         <textarea id="description" name="listing[description]" class="form-control" rows="3" placeholder="Write a brief description" required></textarea>
         <div class="invalid-feedback">Please enter a description.</div>
       </div>
 
+      <!-- Image Upload -->
       <div class="mb-3">
         <label for="imageFile" class="form-label">Upload Image File</label>
-        <input type="file" id="imageFile" name="imageFile" class="form-control">
+        <input type="file" id="imageFile" name="imageFile" class="form-control" required>
+        <div class="invalid-feedback">Please upload an image.</div>
       </div>
 
+      <!-- Price -->
       <div class="mb-3">
         <label for="price" class="form-label">Price</label>
         <input type="number" id="price" name="listing[price]" class="form-control" placeholder="Enter price in INR" required>
         <div class="invalid-feedback">Please enter a price.</div>
       </div>
 
+      <!-- Location -->
       <div class="mb-3">
         <label for="location" class="form-label">Location</label>
         <input type="text" id="location" name="listing[location]" class="form-control" placeholder="Enter location" required>
         <div class="invalid-feedback">Please enter a location.</div>
       </div>
 
+      <!-- Country -->
       <div class="mb-3">
         <label for="country" class="form-label">Country</label>
         <input type="text" id="country" name="listing[country]" class="form-control" placeholder="Enter country" required>
         <div class="invalid-feedback">Please enter a country.</div>
       </div>
 
+      <!-- Category -->
+      <div class="mb-3">
+  <label for="category" class="form-label">Category</label>
+  <select id="category" name="listing[category]" class="form-select" required>
+    <option value="">Select category</option>
+    <option value="beach">Beach</option>
+    <option value="mountain">Mountain</option>
+    <option value="villa">Villa</option>
+    <option value="trending">Trending</option>
+    <option value="city">City</option>
+    <option value="camping">Camping</option>
+    <option value="luxury">Luxury</option>
+    <option value="historic">Historic</option>
+    <option value="all">All</option>
+  </select>
+  <div class="invalid-feedback">Please select a category.</div>
+</div>
+
+
+      <!-- Buttons -->
       <div class="d-flex justify-content-between">
         <button type="submit" class="btn btn-primary px-4">Create</button>
         <a href="/listings" class="btn btn-outline-secondary px-4">Cancel</a>
       </div>
+
     </form>
   </div>
 </div>
+
+<style>
+/* Category dropdown styling */
+.category-select {
+  border-radius: 12px;
+  padding: 8px 12px;
+  transition: 0.3s;
+  border: 1px solid #ccc;
+}
+.category-select:focus {
+  border-color: #ff385c;
+  box-shadow: 0 0 8px rgba(255, 56, 92, 0.25);
+  outline: none;
+}
+.category-select option {
+  padding: 8px;
+}
+</style>

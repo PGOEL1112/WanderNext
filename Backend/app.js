@@ -1,7 +1,6 @@
- if(process.env.NODE_ENV != "production"){ 
+if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
-console.log(process.env.SECRET);
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -12,46 +11,62 @@ const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError");
 
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 
-// Models
+// MODELS
 const User = require("./models/user");
-
 
 // ROUTES
 const resetPasswordRoutes = require("./routes/reset-password");
 const listings = require("./routes/listing");
 const reviews = require("./routes/reviews");
 const users = require("./routes/user");
+const apiRoutes = require("./routes/api");
+
+const Atlasdburl = process.env.ATLAS_DB_URL;
+
+// ---------------------------
+// 🟦 MONGODB CONNECTION
+// ---------------------------
+const MONGO_URL = "mongodb://127.0.0.1:27017/WanderNext";
+mongoose
+  .connect(Atlasdburl)
+  .then(() => console.log("✅ MongoDB Connected Successfully!"))
+  .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
 
 // ---------------------------
-// 🟦 MIDDLEWARE SETUP
+// 🟦 APP CONFIG
 // ---------------------------
-
-// Body Parsers
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// Method Override
 app.use(methodOverride("_method"));
-
-// Static Files
 app.use(express.static(path.join(__dirname, "public")));
 
-// View Engine
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 
 // ---------------------------
-// 🟦 SESSION + FLASH
+// 🟦 SESSION STORE
 // ---------------------------
+const store = MongoStore.create({
+  mongoUrl: Atlasdburl,
+  collectionName: "sessions",
+  ttl: 14 * 24 * 60 * 60   // 14 days
+});
+
+store.on("error", (err) => {
+  console.log("⚠ Mongo Session Store Error", err);
+});
+
 const sessionOptions = {
-  secret: "mySecretKey",
+  store,
+  secret: process.env.SECRET || "mysupersecret",
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -60,6 +75,7 @@ const sessionOptions = {
     httpOnly: true,
   },
 };
+
 app.use(session(sessionOptions));
 app.use(flash());
 
@@ -76,7 +92,7 @@ passport.deserializeUser(User.deserializeUser());
 
 
 // ---------------------------
-// 🟦 FLASH + CURRENT USER GLOBALS
+// 🟦 GLOBAL MIDDLEWARE
 // ---------------------------
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
@@ -87,31 +103,17 @@ app.use((req, res, next) => {
 
 
 // ---------------------------
-// 🟦 MONGODB CONNECTION
-// ---------------------------
-const MONGO_URL = "mongodb://127.0.0.1:27017/WanderNext";
-mongoose
-  .connect(MONGO_URL)
-  .then(() => console.log("✅ MongoDB Connected Successfully!"))
-  .catch((err) => console.log("❌ MongoDB Connection Error:", err));
-
-
-// ---------------------------
 // 🟦 ROUTES
 // ---------------------------
-
-// ROOT
 app.get("/", (req, res) => {
-  res.render("listings/home");  
+  res.render("listings/home");
 });
 
-// External Auth Routes
-app.use("/",resetPasswordRoutes);   // /forgot-password /reset-password
-
-// App Routes
+app.use("/api", apiRoutes);
 app.use("/listings", listings);
 app.use("/listings/:id/reviews", reviews);
 app.use("/", users);
+app.use("/", resetPasswordRoutes);
 
 
 // ---------------------------
@@ -126,6 +128,9 @@ app.use((req, res, next) => {
 // 🟦 GLOBAL ERROR HANDLER
 // ---------------------------
 app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
   const { statusCode = 500 } = err;
   if (!err.message) err.message = "Something went wrong!";
   res.status(statusCode).render("error", { message: err.message });

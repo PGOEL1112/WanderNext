@@ -1,19 +1,108 @@
-<%- layout("layouts/boilerplate") %>
-<div class="page-header">
-  <h1>All Listings</h1>
-  <a href="/" class="btn back">← Back</a>
+<%- layout("layouts/boilerplate") %> 
+
+<!-- ===== SEARCH + FILTER BAR ===== -->
+<form action="/listings" method="GET" class="filter-bar d-flex align-items-center gap-2">
+
+  <!-- Search Input -->
+  <input type="text" name="search" class="form-control search-input"
+         placeholder="Search by title or location/country..." value="<%= search || '' %>">
+
+  <!-- Min/Max Price -->
+  <input type="number" name="minPrice" class="form-control price-input"
+         placeholder="Min ₹" value="<%= minPrice || '' %>">
+  <input type="number" name="maxPrice" class="form-control price-input"
+         placeholder="Max ₹" value="<%= maxPrice || '' %>">
+
+  <!-- Search Button in separate div -->
+  <div class="search-btn-wrapper">
+    <button type="submit" class="btn btn-dark search-btn">
+      <i class="fa-solid fa-magnifying-glass"></i> Search
+    </button>
+  </div>
+
+  <!-- GST Toggle in bordered div -->
+  <div class="gst-wrapper d-flex align-items-center">
+    <label class="form-switch">
+      <input type="checkbox" name="gst" value="on" <%= gst ? 'checked' : '' %> onchange="this.form.submit()">
+      <span class="slider"></span>
+    </label>
+    <span class="gst-label ms-2"><strong>GST</strong></span>
+  </div>
+
+  <input type="hidden" name="category" value="<%= category || 'all' %>">
+</form>
+
+<!-- ===== CATEGORY FILTER + BACK BUTTON ===== -->
+<div class="category-filter-container">
+  <div class="category-filter" role="tablist" aria-label="Categories">
+    <% const categories = [
+      {id:"beach",icon:"fa-umbrella-beach",label:"Beach"},
+      {id:"mountain",icon:"fa-mountain",label:"Mountain"},
+      {id:"villa",icon:"fa-hotel",label:"Villa"},
+      {id:"trending",icon:"fa-fire",label:"Trending"},
+      {id:"city",icon:"fa-city",label:"City"},
+      {id:"camping",icon:"fa-campground",label:"Camping"},
+      {id:"luxury",icon:"fa-gem",label:"Luxury"},
+      {id:"historic",icon:"fa-landmark",label:"Historic"},
+      {id:"all",icon:"fa-globe",label:"All"}
+    ] %>
+
+    <% categories.forEach(cat => { %>
+      <a href="/listings?category=<%= cat.id %>&search=<%= encodeURIComponent(search||'') %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&gst=<%= gst ? 'on' : 'off' %>"
+         class="category-item <%= (category===cat.id || (!category && cat.id==='all')) ? 'active' : '' %>">
+        <i class="fa-solid <%= cat.icon %>"></i><span><%= cat.label %></span>
+      </a>
+    <% }) %>
+  </div>
+
+  <!-- Back button -->
+  <a href="/" class="btn btn-dark back-btn">
+    <i class="fa-solid fa-arrow-left"></i> Back
+  </a>
+
 </div>
 
-<br> 
+<!-- ===== LISTING GRID ===== -->
 <div class="listing-grid">
+  <% if (!allListings || allListings.length === 0) { %>
+    <div class="empty-state">
+      <h4>No listings found</h4>
+      <p>Try clearing filters or search again.</p>
+    </div>
+  <% } %>
+
   <% allListings.forEach(listing => { %>
     <div class="listing-card">
-        <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
-        <div class="listing-info">
-            <h3><a href="/listings/<%= listing._id %>"><%= listing.title %></a></h3>
-            <p><%= listing.location %>, <%= listing.country %></p>
-            <p class="price">₹<%= listing.price.toLocaleString("en-IN") %>/night</p>
+      <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
+      <div class="listing-info">
+        <h3><a href="/listings/<%= listing._id %>"><%= listing.title %></a></h3>
+        <p><%= listing.location %>, <%= listing.country %></p>
+
+        <% if (gst) { %>
+          <p class="price">₹<%= (listing.priceWithGst || Math.round(listing.price*1.18)).toLocaleString("en-IN") %>/night
+            <small class="text-muted">(GST included)</small></p>
+        <% } else { %>
+          <p class="price">₹<%= Number(listing.price).toLocaleString("en-IN") %>/night</p>
+        <% } %>
       </div>
     </div>
   <% }) %>
 </div>
+
+<script>
+  const searchInput = document.querySelector('.search-input');
+  const listingsGrid = document.querySelector('.listing-grid');
+
+  searchInput.addEventListener('input', function() {
+    const query = this.value;
+    fetch(`/listings?search=${encodeURIComponent(query)}&minPrice=<%= minPrice || '' %>&maxPrice=<%= maxPrice || '' %>&gst=<%= gst ? 'on' : 'off' %>`)
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newListings = doc.querySelector('.listing-grid').innerHTML;
+        listingsGrid.innerHTML = newListings;
+      })
+      .catch(err => console.error(err));
+  });
+</script>

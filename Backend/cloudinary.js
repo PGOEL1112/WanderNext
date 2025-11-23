@@ -11,7 +11,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinaryModule,
     params: {
         folder: "WanderNext",
-        allowed_formats: ["jpeg", "png", "jpg","avif"]
+        allowed_formats: ["jpeg", "png", "jpg","avif","webp"]
     },
 });
 

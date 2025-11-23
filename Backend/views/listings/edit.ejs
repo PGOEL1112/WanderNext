@@ -67,11 +67,30 @@
         <div class="invalid-feedback">Please enter a country.</div>
       </div>
 
+      <div class="mb-3">
+  <label for="category" class="form-label">Category</label>
+  <select id="category" name="listing[category]" class="form-select form-control category-select" required>
+    <option value="">Select category</option>
+    <option value="beach" <%= listing.category==='beach'?'selected':'' %>>Beach</option>
+    <option value="mountain" <%= listing.category==='mountain'?'selected':'' %>>Mountain</option>
+    <option value="villa" <%= listing.category==='villa'?'selected':'' %>>Villa</option>
+    <option value="trending" <%= listing.category==='trending'?'selected':'' %>>Trending</option>
+    <option value="city" <%= listing.category==='city'?'selected':'' %>>City</option>
+    <option value="camping" <%= listing.category==='camping'?'selected':'' %>>Camping</option>
+    <option value="luxury" <%= listing.category==='luxury'?'selected':'' %>>Luxury</option>
+    <option value="historic" <%= listing.category==='historic'?'selected':'' %>>Historic</option>
+    <option value="all" <%= listing.category==='all'?'selected':'' %>>All</option>
+  </select>
+  <div class="invalid-feedback">Please select a category.</div>
+</div>
+
+
       <!-- Buttons -->
       <div class="d-flex justify-content-between">
-        <button type="submit" class="btn btn-primary px-4">Update Listing</button>
-        <a href="/listings/<%= listing._id %>" class="btn btn-outline-secondary">← Back</a>
+        <button type="submit" class="btn btn-primary px-4">Update</button>
+        <a href="/listings/<%= listing._id %>" class="btn btn-outline-secondary px-4">Cancel</a>
       </div>
+
 
     </form>
   </div>

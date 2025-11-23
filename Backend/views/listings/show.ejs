@@ -1,106 +1,170 @@
 <%- layout("layouts/boilerplate") %>
+
 <div class="listing-detail">
+  <!-- Listing Image -->
   <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
-    <div class="listing-text">
-        <!-- Accessing Details -->
-        <h2><%= listing.title %></h2>
-        <p><strong>Owned By:</strong> <%= listing.owner.username %></p>
-        <p><strong>Location:</strong> <%= listing.location %>, <%= listing.country %></p>
-        <p><strong>Price:</strong> ₹<%= listing.price.toLocaleString("en-IN") %>/night</p>
-        <p><%= listing.description %></p>
 
+  <div class="listing-text">
+    <h2><%= listing.title %></h2>
+    <p><strong>Owned By:</strong> <%= listing.owner.username %></p>
+    <p><strong>Location:</strong> <%= listing.location %>, <%= listing.country %></p>
+    <p><strong>Price:</strong> ₹<%= listing.price.toLocaleString("en-IN") %>/night</p>
+    <p><%= listing.description %></p>
 
-        <% if(currentUser && currentUser._id.equals(listing.owner._id)) { %>
-        <div class="action-buttons">
-            <a class="btn edit" href="/listings/<%= listing._id %>/edit">Edit</a>
-            <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="inline-form">
-            <button class="btn delete">Delete</button>
-            </form>
-            <a href="/listings" class="btn back">← Back</a>
-        </div>
-        <% } %>
-    </div>
-
-
-    <!-- ===================== Review Form ===================== -->
-    <% if(currentUser) { %>
-    <div class="review-section">
-        <h2 class="review-heading">✨ Share Your WanderNext Experience ✨</h2>
-
-        <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="review-form  needs-validation">
-            <div class="rating-group">
-                <label class="rating-label">Your Rating</label>
-                <div class="stars">
-                    <input type="radio" id="star5" name="review[rating]" value="5"><label for="star5">★</label>
-                    <input type="radio" id="star4" name="review[rating]" value="4"><label for="star4">★</label>
-                    <input type="radio" id="star3" name="review[rating]" value="3"><label for="star3">★</label>
-                    <input type="radio" id="star2" name="review[rating]" value="2"><label for="star2">★</label>
-                    <input type="radio" id="star1" name="review[rating]" value="1"><label for="star1">★</label>
-                </div>
-            </div>
-
-            <div class="comment-group">
-                <label for="comment">Your Review</label>
-                <textarea id="comment" name="review[comment]" placeholder="Tell others what you loved (or didn’t)..." required></textarea>
-                <div class="invalid-feedback">Please Submit your some experience for review</div>
-            </div>
-
-            <div class="submit-btn">
-                <button type="submit">Submit Review</button>
-            </div>
-        </form>
+    <% if(currentUser && currentUser._id.equals(listing.owner._id)) { %>
+    <div class="action-buttons">
+      <a class="btn edit" href="/listings/<%= listing._id %>/edit">Edit</a>
+      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="inline-form">
+        <button class="btn delete">Delete</button>
+      </form>
+      <a href="/listings" class="btn back">← Back</a>
     </div>
     <% } %>
+  </div>
 
-
-<!-- ===================== Display Submitted Reviews ===================== -->
-    <div class="submitted-reviews">
-        <h3 class="submitted-heading">What Travelers Say</h3>
-
-        <% if (listing.reviews.length === 0) { %>
-            <p class="no-reviews">No reviews yet — be the first to share your experience!</p>
-        <% } else { %>
-            <% listing.reviews.forEach((review) => { %>
-                <div class="review-card">
-                    <div class="review-header">
-                        <div class="review-body">
-                            <p><strong>@<%= review.author.username %></strong></p>
-
-                        <div class="stars-display">
-                            <% for(let i = 0; i < review.rating; i++) { %>
-                                <span class="star-filled">★</span>
-                            <% } %>
-                            <% for(let i = review.rating; i < 5; i++) { %>
-                                <span class="star-empty">★</span>
-                            <% } %>
-                        </div>
-                        </div>
-                        <p class="review-date">
-                            <% if (review.createdAt) { %>
-                                <%= new Date(review.createdAt).toLocaleDateString("en-IN", { 
-                                year: "numeric", 
-                                month: "long", 
-                                day: "numeric" 
-                                }) %>
-                            <% } else { %>
-                                <em>Recently added</em>
-                            <% } %>
-                        </p>
-                    </div>
-
-                    <div class="review-body">
-                        <p><%= review.comment %></p>
-                    </div>
-                    
-                    <% if (currentUser && review.author && (review.author._id ? review.author._id.toString() : review.author.toString()) === currentUser._id.toString()) { %>
-                    <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST">
-                        <button class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                    <% } %>
-
-                </div>
-            <% }) %>
-        <% } %>
+  <!-- ===================== MAP SECTION ===================== -->
+  <% if(listing.geometry && listing.geometry.coordinates) { %>
+    <h3 class="location-heading mt-4"><span>📍</span> Location</h3>
+    <div id="map"
+         data-lng="<%= listing.geometry.coordinates[0] %>"
+         data-lat="<%= listing.geometry.coordinates[1] %>"
+         style="height:350px; width:100%; margin-top:10px; border-radius:10px;">
     </div>
+  <% } %>
+
+  <!-- ===================== Review Form ===================== -->
+  <% if(currentUser) { %>
+  <div class="review-section">
+    <h2 class="review-heading">✨ Share Your WanderNext Experience ✨</h2>
+
+    <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="review-form  needs-validation">
+      <div class="rating-group">
+        <label class="rating-label">Your Rating</label>
+        <div class="stars">
+          <input type="radio" id="star5" name="review[rating]" value="5"><label for="star5">★</label>
+          <input type="radio" id="star4" name="review[rating]" value="4"><label for="star4">★</label>
+          <input type="radio" id="star3" name="review[rating]" value="3"><label for="star3">★</label>
+          <input type="radio" id="star2" name="review[rating]" value="2"><label for="star2">★</label>
+          <input type="radio" id="star1" name="review[rating]" value="1"><label for="star1">★</label>
+        </div>
+      </div>
+
+      <div class="comment-group">
+        <label for="comment">Your Review</label>
+        <textarea id="comment" name="review[comment]" placeholder="Tell others what you loved (or didn’t)..." required></textarea>
+        <div class="invalid-feedback">Please submit some experience for review</div>
+      </div>
+
+      <div class="submit-btn">
+        <button type="submit">Submit Review</button>
+      </div>
+    </form>
+  </div>
+  <% } %>
+
+  <!-- ===================== Display Submitted Reviews ===================== -->
+  <div class="submitted-reviews">
+    <h3 class="submitted-heading">What Travelers Say</h3>
+
+    <% if (listing.reviews.length === 0) { %>
+      <p class="no-reviews">No reviews yet — be the first to share your experience!</p>
+    <% } else { %>
+      <% listing.reviews.forEach((review) => { %>
+        <div class="review-card">
+          <div class="review-header">
+            <div class="review-body">
+              <p><strong>@<%= review.author.username %></strong></p>
+
+              <div class="stars-display">
+                <% for(let i = 0; i < review.rating; i++) { %>
+                  <span class="star-filled">★</span>
+                <% } %>
+                <% for(let i = review.rating; i < 5; i++) { %>
+                  <span class="star-empty">★</span>
+                <% } %>
+              </div>
+            </div>
+            <p class="review-date">
+              <% if (review.createdAt) { %>
+                <%= new Date(review.createdAt).toLocaleDateString("en-IN", { 
+                  year: "numeric", 
+                  month: "long", 
+                  day: "numeric" 
+                }) %>
+              <% } else { %>
+                <em>Recently added</em>
+              <% } %>
+            </p>
+          </div>
+
+          <div class="review-body">
+            <p><%= review.comment %></p>
+          </div>
+
+          <% if (currentUser && review.author && (review.author._id ? review.author._id.toString() : review.author.toString()) === currentUser._id.toString()) { %>
+          <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST">
+            <button class="btn btn-danger btn-sm">Delete</button>
+          </form>
+          <% } %>
+
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
 
 </div>
+
+<!-- ===================== MAP SECTION ===================== -->
+<div id="map" 
+     data-lng="<%= listing.geometry.coordinates[0] %>" 
+     data-lat="<%= listing.geometry.coordinates[1] %>"
+     style="height:400px; width:100%; margin-top:20px; border-radius:10px;">
+</div>
+<link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" crossorigin="anonymous" />
+<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js" crossorigin="anonymous"></script>
+
+<script>
+window.addEventListener('load', () => {
+  const mapEl = document.getElementById('map');
+  const lng = Number(mapEl.dataset.lng);
+  const lat = Number(mapEl.dataset.lat);
+
+  if (typeof maplibregl === 'undefined') {
+    console.error('maplibregl is not loaded!');
+    return;
+  }
+
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: `https://api.maptiler.com/maps/streets/style.json?key=<%= mapToken %>`,
+    center: [lng, lat],
+    zoom: 12
+  });
+
+  map.addControl(new maplibregl.NavigationControl());
+
+  const marker = new maplibregl.Marker({ color: "#e74c3c" })
+    .setLngLat([lng, lat])
+    .addTo(map);
+
+  const popup = new maplibregl.Popup({
+    offset: 25,
+    closeButton: false,
+    closeOnClick: false
+  }).setHTML(`
+    <h4><%= listing.location %></h4>
+    <p><%= listing.country %></p>
+  `);
+
+  marker.getElement().addEventListener('mouseenter', () => {
+    popup.addTo(map).setLngLat([lng, lat]);
+  });
+
+  marker.getElement().addEventListener('mouseleave', () => {
+    popup.remove();
+  });
+});
+</script>
+
+
+
