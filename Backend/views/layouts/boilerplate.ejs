@@ -38,7 +38,7 @@
       <a href="/" class="btn btn-sm btn-outline-light ms-3">Home</a>
       <a href="/listings/new" class="btn btn-sm btn-outline-light ms-3">Add Listing</a>
       
-      <% if (!currentUser) { %>
+      <% if (typeof currentUser === "undefined" || !currentUser) { %>
       <a href="/login" class="btn btn-sm btn-outline-light ms-3">Login</a>
       <a href="/register" class="btn btn-sm btn-warning text-dark ms-2">Register</a>
 
