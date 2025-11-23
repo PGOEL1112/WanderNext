@@ -1,9 +1,0 @@
-# Ignore environment variables
-.env                # root .env file
-Backend/.env        # if .env is inside Backend folder
-
-# Node modules
-node_modules/
-
-# Local uploads (if any)
-uploads/

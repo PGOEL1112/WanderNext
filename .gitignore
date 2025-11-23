@@ -1,0 +1,10 @@
+# Environment Variables
+.env
+Backend/.env
+
+# Node modules
+node_modules/
+Backend/node_modules/
+
+# Local uploads
+Backend/uploads/
