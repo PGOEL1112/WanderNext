@@ -59,9 +59,9 @@
   </header>
 
   <!-- ✅ Flash Messages -->
-<div class="container mt-0" >
-  <% if (success && success.length > 0) { %>
-    <% success.forEach(msg => { %>
+<div class="container mt-0">
+  <% if (locals.success && locals.success.length > 0) { %>
+    <% locals.success.forEach(msg => { %>
       <div class="alert alert-success alert-dismissible fade show flash-msg" role="alert">
         <i class="fa-solid fa-circle-check"></i> <%= msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -69,15 +69,14 @@
     <% }) %>
   <% } %>
 
-  <% if (error && error.length > 0) { %>
-    <% error.forEach(msg => { %>
+  <% if (locals.error && locals.error.length > 0) { %>
+    <% locals.error.forEach(msg => { %>
       <div class="alert alert-danger alert-dismissible fade show flash-msg" role="alert">
         <i class="fa-solid fa-triangle-exclamation"></i> <%= msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     <% }) %>
   <% } %>
-  
 </div>
 
 
