@@ -1,6 +1,5 @@
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: "./Backend/.env" });
-
 }
 
 const express = require("express");
@@ -10,7 +9,6 @@ const app = express();
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError");
-
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const flash = require("connect-flash");
@@ -27,17 +25,27 @@ const reviews = require("./routes/reviews");
 const users = require("./routes/user");
 const apiRoutes = require("./routes/api");
 
-const Atlasdburl = process.env.ATLAS_DB_URL;
-
 // ---------------------------
 // 🟦 MONGODB CONNECTION
 // ---------------------------
-const MONGO_URL = "mongodb://127.0.0.1:27017/WanderNext";
-mongoose
-  .connect(Atlasdburl)
-  .then(() => console.log("✅ MongoDB Connected Successfully!"))
-  .catch((err) => console.log("❌ MongoDB Connection Error:", err));
+const Atlasdburl = process.env.ATLAS_DB_URL;
 
+if (!Atlasdburl) {
+  console.error("❌ ATLAS_DB_URL not found in .env file");
+  process.exit(1);
+}
+
+mongoose
+  .connect(Atlasdburl, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ MongoDB Atlas Connected Successfully!"))
+  .catch((err) => {
+    console.error("❌ MongoDB Connection Error:", err.message);
+    console.error("💡 Tip: Make sure your IP is whitelisted in MongoDB Atlas");
+    process.exit(1);
+  });
 
 // ---------------------------
 // 🟦 APP CONFIG
@@ -51,35 +59,34 @@ app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-
 // ---------------------------
 // 🟦 SESSION STORE
 // ---------------------------
 const store = MongoStore.create({
   mongoUrl: Atlasdburl,
   collectionName: "sessions",
-  ttl: 14 * 24 * 60 * 60   // 14 days
+  ttl: 14 * 24 * 60 * 60, // 14 days
 });
 
 store.on("error", (err) => {
   console.log("⚠ Mongo Session Store Error", err);
 });
 
-const sessionOptions = {
-  store,
-  secret: process.env.SECRET || "mysupersecret",
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-    httpOnly: true,
-  },
-};
+app.use(
+  session({
+    store,
+    secret: process.env.SECRET || "mysupersecret",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      httpOnly: true,
+    },
+  })
+);
 
-app.use(session(sessionOptions));
 app.use(flash());
-
 
 // ---------------------------
 // 🟦 PASSPORT AUTH SETUP
@@ -91,7 +98,6 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-
 // ---------------------------
 // 🟦 GLOBAL MIDDLEWARE
 // ---------------------------
@@ -101,7 +107,6 @@ app.use((req, res, next) => {
   res.locals.error = req.flash("error");
   next();
 });
-
 
 // ---------------------------
 // 🟦 ROUTES
@@ -116,7 +121,6 @@ app.use("/listings/:id/reviews", reviews);
 app.use("/", users);
 app.use("/", resetPasswordRoutes);
 
-
 // ---------------------------
 // 🟦 404 HANDLER
 // ---------------------------
@@ -124,24 +128,20 @@ app.use((req, res, next) => {
   next(new ExpressError(404, "Page Not Found!"));
 });
 
-
 // ---------------------------
 // 🟦 GLOBAL ERROR HANDLER
 // ---------------------------
 app.use((err, req, res, next) => {
-  if (res.headersSent) {
-    return next(err);
-  }
+  if (res.headersSent) return next(err);
   const { statusCode = 500 } = err;
   if (!err.message) err.message = "Something went wrong!";
   res.status(statusCode).render("error", { message: err.message });
 });
 
-
 // ---------------------------
 // 🟦 SERVER START
 // ---------------------------
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
