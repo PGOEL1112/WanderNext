@@ -8,7 +8,7 @@ const User = require("../models/user");
 // SHOW FORGOT PASSWORD FORM
 // =========================
 router.get("/forgot-password", (req, res) => {
-  res.render("users/forgot-password");
+  res.render("users/forgot-password"); // Ensure file is named "forgot-password.ejs"
 });
 
 // =========================
@@ -31,10 +31,10 @@ router.post("/forgot-password", async (req, res) => {
 
     await user.save();
 
-    // In production, you would send this token via email:
+    // In production, you would send this token via email
     // sendResetEmail(user.email, token);
 
-    // For now, redirect directly (development)
+    // Redirect directly for development
     res.redirect(`/reset-password/${token}`);
   } catch (err) {
     console.log("Forgot Password Error →", err);
@@ -55,14 +55,14 @@ router.get("/reset-password/:token", async (req, res) => {
 
     if (!user) {
       req.flash("error", "Reset link expired or invalid.");
-      return res.redirect("/forgot-password");
+      return res.redirect("/forgot-password"); // corrected path
     }
 
-    res.render("users/reset-password", { token: req.params.token });
+    res.render("users/reset-password", { token: req.params.token }); // Ensure file is "reset-password.ejs"
   } catch (err) {
     console.log("Reset Password Form Error →", err);
     req.flash("error", "Something went wrong.");
-    res.redirect("/forgot-password");
+    res.redirect("/forgot-password"); // corrected path
   }
 });
 
@@ -86,7 +86,7 @@ router.post("/reset-password/:token", async (req, res) => {
 
     if (!user) {
       req.flash("error", "Reset link expired or invalid.");
-      return res.redirect("/forgot-password");
+      return res.redirect("/forgot-password"); // corrected path
     }
 
     // ===== Option 1: Using passport-local-mongoose =====
@@ -110,7 +110,7 @@ router.post("/reset-password/:token", async (req, res) => {
   } catch (err) {
     console.log("Reset Password Submit Error →", err);
     req.flash("error", "Something went wrong.");
-    res.redirect("/forgot-password");
+    res.redirect("/forgot-password"); // corrected path
   }
 });
 

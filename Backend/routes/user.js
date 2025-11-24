@@ -34,7 +34,6 @@ router.get("/register", (req, res) => {
 router.post("/register", wrapAsync(async (req, res) => {
     try {
         const { username, email, password } = req.body;
-
         const user = new User({ email, username });
         const registeredUser = await User.register(user, password);
 
@@ -85,7 +84,7 @@ router.get("/logout", (req, res, next) => {
 // FORGOT PASSWORD — SHOW PAGE
 // ======================================================
 router.get("/forgot-password", (req, res) => {
-    res.render("users/forgotPassword");
+    res.render("users/forgot-password"); // matches file name
 });
 
 // ======================================================
@@ -93,7 +92,6 @@ router.get("/forgot-password", (req, res) => {
 // ======================================================
 router.post("/forgot-password", async (req, res) => {
     const { email } = req.body;
-
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -103,9 +101,8 @@ router.post("/forgot-password", async (req, res) => {
 
     const token = crypto.randomBytes(32).toString("hex");
 
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour validity
-
+    user.resetToken = token;
+    user.resetTokenExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
     const transporter = await createTransporter();
@@ -135,8 +132,8 @@ router.post("/forgot-password", async (req, res) => {
 // ======================================================
 router.get("/reset-password/:token", async (req, res) => {
     const user = await User.findOne({
-        resetPasswordToken: req.params.token,
-        resetPasswordExpires: { $gt: Date.now() } // still valid?
+        resetToken: req.params.token,
+        resetTokenExpires: { $gt: Date.now() }
     });
 
     if (!user) {
@@ -144,7 +141,7 @@ router.get("/reset-password/:token", async (req, res) => {
         return res.redirect("/forgot-password");
     }
 
-    res.render("users/resetPassword", { token: req.params.token });
+    res.render("users/reset-password", { token: req.params.token }); // matches file
 });
 
 // ======================================================
@@ -152,8 +149,8 @@ router.get("/reset-password/:token", async (req, res) => {
 // ======================================================
 router.post("/reset-password/:token", async (req, res) => {
     const user = await User.findOne({
-        resetPasswordToken: req.params.token,
-        resetPasswordExpires: { $gt: Date.now() }
+        resetToken: req.params.token,
+        resetTokenExpires: { $gt: Date.now() }
     });
 
     if (!user) {
@@ -161,13 +158,18 @@ router.post("/reset-password/:token", async (req, res) => {
         return res.redirect("/forgot-password");
     }
 
-    const { password } = req.body;
+    const { password, confirmPassword } = req.body;
 
-    // Passport-local-mongoose will hash + salt automatically
+    if (password !== confirmPassword) {
+        req.flash("error", "Passwords do not match.");
+        return res.redirect(`/reset-password/${req.params.token}`);
+    }
+
+    // Passport-local-mongoose auto hashes password
     await user.setPassword(password);
 
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
+    user.resetToken = undefined;
+    user.resetTokenExpires = undefined;
 
     await user.save();
 
