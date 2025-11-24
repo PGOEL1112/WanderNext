@@ -7,32 +7,86 @@
       <i class="fa-solid fa-user-plus me-2"></i> Register
     </h2>
 
+    <!-- Flash Messages -->
+    <% if (typeof error !== 'undefined' && error.length) { %>
+      <% error.forEach(msg => { %>
+        <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+          <%= msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% }) %>
+    <% } %>
+
+    <% if (typeof success !== 'undefined' && success.length) { %>
+      <% success.forEach(msg => { %>
+        <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+          <%= msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% }) %>
+    <% } %>
 
     <form action="/register" method="POST">
 
       <div class="input-group mb-3 input-icon-group">
         <span class="input-icon"><i class="fa-solid fa-user"></i></span>
-        <input type="text" name="username" class="form-control auth-input" placeholder="Username" required>
+        <input 
+          type="text" 
+          name="username" 
+          id="username" 
+          class="form-control auth-input" 
+          placeholder="Username" 
+          required
+          autocomplete="username"
+        >
       </div>
 
-    <div class="input-group mb-3 input-icon-group">
-      <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
-      <input type="email" name="email" class="form-control auth-input" placeholder="Email" required>
-    </div>
+      <div class="input-group mb-3 input-icon-group">
+        <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
+        <input 
+          type="email" 
+          name="email" 
+          id="email" 
+          class="form-control auth-input" 
+          placeholder="Email" 
+          required
+          autocomplete="email"
+        >
+      </div>
 
-    <div class="input-group mb-3 input-icon-group password-wrapper">
-      <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
-      <input type="password" id="regpassword" name="password" class="form-control auth-input" placeholder="Password" required>
-      <span class="toggle-password" onclick="toggleRegPassword()">
-        <i class="fa-solid fa-eye"></i>
-      </span>
-    </div>
+      <div class="input-group mb-3 input-icon-group password-wrapper">
+        <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+        <input 
+          type="password" 
+          id="regpassword" 
+          name="password" 
+          class="form-control auth-input" 
+          placeholder="Password" 
+          required
+          autocomplete="new-password"
+        >
+        <span class="toggle-password" onclick="toggleRegPassword()">
+          <i class="fa-solid fa-eye"></i>
+        </span>
+      </div>
 
-    <button class="btn auth-btn w-100">Register</button>
+      <button class="btn auth-btn w-100">Register</button>
 
     </form>
 
   </div>
 </div>
 
-
+<script>
+  function toggleRegPassword() {
+    const pass = document.getElementById('regpassword');
+    const icon = document.querySelector('#regpassword + .toggle-password i');
+    if(pass.type === 'password') {
+      pass.type = 'text';
+      icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+      pass.type = 'password';
+      icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+  }
+</script>

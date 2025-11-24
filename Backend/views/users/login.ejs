@@ -7,32 +7,63 @@
       <i class="fa-solid fa-right-to-bracket me-2"></i> Login
     </h2>
 
+    <!-- Flash Messages -->
+    <% if (typeof error !== 'undefined' && error.length) { %>
+      <% error.forEach(msg => { %>
+        <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+          <%= msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% }) %>
+    <% } %>
+
+    <% if (typeof success !== 'undefined' && success.length) { %>
+      <% success.forEach(msg => { %>
+        <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+          <%= msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% }) %>
+    <% } %>
 
     <form action="/login" method="POST">
 
       <div class="input-group mb-3 input-icon-group">
         <span class="input-icon"><i class="fa-solid fa-user"></i></span>
-        <input type="text" name="username" class="form-control auth-input" placeholder="Username" required>
+        <input 
+          type="text" 
+          name="username" 
+          class="form-control auth-input" 
+          placeholder="Username" 
+          required 
+          id="username"
+          autocomplete="username"
+        >
       </div>
 
       <div class="input-group mb-3 input-icon-group password-wrapper">
         <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
-        <input type="password" id="password" name="password" class="form-control auth-input" placeholder="Password" required>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          class="form-control auth-input" 
+          placeholder="Password" 
+          required
+          autocomplete="current-password"
+        >
         <span class="toggle-password" onclick="togglePassword()">
           <i class="fa-solid fa-eye"></i>
         </span>
       </div>
 
-
       <button class="btn auth-btn w-100">Login</button>
 
       <div class="text-center mt-3">
         <a href="/forgot-password" class="link">Forgot Password?</a>
+        <a href="/register" class="link">Don't have Account? Create Account</a>
       </div>
     </form>
 
   </div>
 </div>
-
-
-

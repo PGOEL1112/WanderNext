@@ -21,7 +21,7 @@ const LocalStrategy = require("passport-local");
 const User = require("./models/user");
 
 // ROUTES
-const resetPasswordRoutes = require("./routes/reset-password");
+const resetPasswordRoutes = require("./routes/resetPassword");
 const listings = require("./routes/listing");
 const reviews = require("./routes/reviews");
 const users = require("./routes/user");

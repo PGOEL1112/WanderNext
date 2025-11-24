@@ -1,20 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs"); // only needed if not using passport-local-mongoose
 const User = require("../models/user");
 
 // =========================
-// SHOW FORGOT PASSWORD
+// SHOW FORGOT PASSWORD FORM
 // =========================
 router.get("/forgot-password", (req, res) => {
   res.render("users/forgot-password");
 });
 
 // =========================
-// HANDLE FORGOT PASSWORD
-// =========================
-// =========================
-// HANDLE FORGOT PASSWORD
+// HANDLE FORGOT PASSWORD SUBMIT
 // =========================
 router.post("/forgot-password", async (req, res) => {
   try {
@@ -26,16 +24,20 @@ router.post("/forgot-password", async (req, res) => {
       return res.redirect("/forgot-password");
     }
 
-    // Generate a token
-    const token = Math.random().toString(36).substr(2, 12);
+    // Generate secure token
+    const token = crypto.randomBytes(20).toString("hex");
     user.resetToken = token;
     user.resetTokenExpires = Date.now() + 1000 * 60 * 30; // 30 minutes
+
     await user.save();
 
-    // 🔹 Redirect user directly to reset password page
+    // In production, you would send this token via email:
+    // sendResetEmail(user.email, token);
+
+    // For now, redirect directly (development)
     res.redirect(`/reset-password/${token}`);
   } catch (err) {
-    console.log(err);
+    console.log("Forgot Password Error →", err);
     req.flash("error", "Something went wrong.");
     res.redirect("/forgot-password");
   }
@@ -58,7 +60,7 @@ router.get("/reset-password/:token", async (req, res) => {
 
     res.render("users/reset-password", { token: req.params.token });
   } catch (err) {
-    console.log(err);
+    console.log("Reset Password Form Error →", err);
     req.flash("error", "Something went wrong.");
     res.redirect("/forgot-password");
   }
@@ -79,7 +81,7 @@ router.post("/reset-password/:token", async (req, res) => {
 
     const user = await User.findOne({
       resetToken: token,
-      resetTokenExpires: { $gt: Date.now() }
+      resetTokenExpires: { $gt: Date.now() },
     });
 
     if (!user) {
@@ -87,8 +89,15 @@ router.post("/reset-password/:token", async (req, res) => {
       return res.redirect("/forgot-password");
     }
 
-    // ✅ Use passport-local-mongoose's setPassword
-    await user.setPassword(password);
+    // ===== Option 1: Using passport-local-mongoose =====
+    if (user.setPassword) {
+      await user.setPassword(password);
+    } 
+    // ===== Option 2: Using plain bcryptjs =====
+    else {
+      const hashedPassword = await bcrypt.hash(password, 12);
+      user.password = hashedPassword;
+    }
 
     // Clear token and expiry
     user.resetToken = undefined;
@@ -98,9 +107,8 @@ router.post("/reset-password/:token", async (req, res) => {
 
     req.flash("success", "Password reset successful! Please log in.");
     res.redirect("/login");
-
   } catch (err) {
-    console.log("RESET ERROR →", err);
+    console.log("Reset Password Submit Error →", err);
     req.flash("error", "Something went wrong.");
     res.redirect("/forgot-password");
   }
