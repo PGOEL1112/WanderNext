@@ -39,6 +39,8 @@ mongoose
   .connect(Atlasdburl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    connectTimeoutMS: 10000,       // 30 seconds
+    serverSelectionTimeoutMS: 10000
   })
   .then(() => console.log("✅ MongoDB Atlas Connected Successfully!"))
   .catch((err) => {
