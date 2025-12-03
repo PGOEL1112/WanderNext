@@ -1,0 +1,72 @@
+/* ---------- GENERAL LAYOUT ---------- */
+body {
+    background: #f4f6f9;
+    font-family: "Poppins", sans-serif;
+}
+
+/* ---------- NAVBAR ---------- */
+.navbar {
+    border-bottom: 2px solid #222;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+}
+
+/* ---------- DASHBOARD CARDS ---------- */
+.dashboard-card {
+    transition: 0.3s;
+    border-radius: 12px !important;
+    overflow: hidden;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 18px rgba(0, 0, 0, 0.12) !important;
+}
+
+.dashboard-card .card-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* ---------- LISTING CARDS ---------- */
+.listing-card {
+    border-radius: 12px !important;
+    transition: 0.3s;
+}
+
+.listing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ---------- BUTTONS ---------- */
+.btn-custom {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-create {
+    background: #28a745;
+    color: white;
+}
+
+.btn-create:hover {
+    background: #23903c;
+}
+
+/* ---------- TYPOGRAPHY ---------- */
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+}

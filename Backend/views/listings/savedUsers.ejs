@@ -1,0 +1,204 @@
+<%- layout("layouts/boilerplate") %>
+
+<div class="container mt-3 admin-listing-container">
+  <h1 class="mb-4 page-title">
+    <i class="fa-solid fa-bookmark"></i> Saved By Users – <span><%= listing.title %></span>
+  </h1>
+
+  <% if (!listing.savedBy || listing.savedBy.length === 0) { %>
+    <div class="alert alert-info premium-alert">
+      <i class="fa-solid fa-circle-info"></i> No users have saved this listing yet.
+    </div>
+  <% } else { %>
+
+    <div class="table-wrapper">
+      <table class="custom-table align-middle">
+        <thead>
+          <tr>
+            <th><i class="fa-solid fa-hashtag"></i></th>
+            <th><i class="fa-solid fa-user"></i> User</th>
+            <th><i class="fa-solid fa-envelope"></i> Email</th>
+            <th><i class="fa-solid fa-shield"></i> Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% listing.savedBy.forEach((user, idx) => { %>
+            <tr>
+              <td><%= idx + 1 %></td>
+              <td class="username-cell"><i class="fa-solid fa-user-circle"></i> <%= user.username %></td>
+              <td><i class="fa-solid fa-at"></i> <%= user.email %></td>
+              <td class="role-tag-light"><i class="fa-solid fa-shield-halved"></i> <%= user.role %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+  <% } %>
+
+  <a href="/listings/<%= listing._id %>" class="btn-back mt-3">
+    <i class="fa-solid fa-arrow-left"></i> Back to Listing
+  </a>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* ---------- CONTAINER ---------- */
+.admin-listing-container {
+  margin-top: 10px !important;
+  padding-top: 0 !important;
+  animation: fadeIn 0.7s ease-in-out;
+}
+
+.page-title {
+  font-weight: 700;
+  font-size: 32px;
+  color: #222;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+/* ---------- TABLE WRAPPER (AUTO HEIGHT + MAX) ---------- */
+.table-wrapper {
+  background: #fff;
+  border-radius: 18px;
+  padding: 0;
+  max-height: 500px;       /* maximum height */
+  min-height: 60px;        /* minimum height if no rows */
+  overflow-y: auto;            
+  overflow-x: auto;            
+  scroll-behavior: smooth;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  position: relative;
+}
+
+/* SCROLLBAR */
+.table-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+.table-wrapper::-webkit-scrollbar-track {
+  background: #eee;
+  border-radius: 20px;
+}
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #3498db;
+  border-radius: 20px;
+}
+
+/* ---------- CUSTOM TABLE ---------- */
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+}
+
+.custom-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #222;
+  color: white;
+}
+
+.custom-table thead th {
+  padding: 18px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ROW STYLE */
+.custom-table tbody tr {
+  background: #f9f9ff;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  border-radius: 12px;
+  transition: 0.25s ease;
+}
+
+.custom-table tbody td {
+  padding: 15px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+/* HOVER EFFECT */
+.custom-table tbody tr:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 8px 22px rgba(52, 152, 219, 0.25);
+  background: #eef7ff;
+}
+
+/* ---------- Username ---------- */
+.username-cell {
+  font-weight: 600;
+  color: #1d3557;
+}
+
+/* ---------- LIGHT ROLE TAG ---------- */
+.role-tag-light {
+  text-transform: capitalize;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: #a8dadc;   
+  color: #1d3557;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* ---------- BACK BUTTON ---------- */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #3498db;
+  color: #fff;
+  padding: 10px 20px;
+  font-weight: 600;
+  border-radius: 30px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+.btn-back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52,152,219,0.35);
+}
+
+/* ---------- ANIMATIONS ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  .custom-table thead {
+    display: none;
+  }
+  .custom-table tbody td {
+    display: block;
+    width: 100%;
+    text-align: right;
+    padding: 14px;
+    position: relative;
+  }
+  .custom-table tbody td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 14px;
+    font-weight: 700;
+    color: #1e3c72;
+  }
+  .custom-table tbody tr:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+</style>

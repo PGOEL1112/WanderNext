@@ -1,96 +1,417 @@
 <%- layout("layouts/boilerplate") %>
 
-<div class="container mt-5 mb-5">
-  <div class="card shadow-lg p-4 rounded-4">
-    <h2 class="text-center mb-4">Create New Listing</h2>
+<div class="container mt-4 mb-5">
+  <div class="glass-card shadow-lg p-4 mx-auto">
+    <h2 class="page-title text-center mb-4">
+      <i class="fa-solid fa-plus-circle"></i> Create New Listing
+    </h2>
 
     <form method="POST" action="/listings" class="needs-validation" novalidate enctype="multipart/form-data">
 
       <!-- Title -->
       <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
-        <input type="text" id="title" name="listing[title]" class="form-control" placeholder="Enter listing title" required>
+        <label class="form-label">
+          <i class="fa-solid fa-heading"></i> <strong>Title</strong>
+        </label>
+        <input type="text" name="listing[title]" class="custom-input" placeholder="Enter listing title" required>
         <div class="invalid-feedback">Please enter a title.</div>
       </div>
 
       <!-- Description -->
       <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <textarea id="description" name="listing[description]" class="form-control" rows="3" placeholder="Write a brief description" required></textarea>
+        <label class="form-label">
+          <i class="fa-solid fa-align-left"></i> <strong>Description</strong>
+        </label>
+        <textarea name="listing[description]" class="custom-input" rows="4" placeholder="Write a brief description" required></textarea>
         <div class="invalid-feedback">Please enter a description.</div>
       </div>
 
       <!-- Image Upload -->
       <div class="mb-3">
-        <label for="imageFile" class="form-label">Upload Image File</label>
-        <input type="file" id="imageFile" name="imageFile" class="form-control" required>
+        <label class="form-label">
+          <i class="fa-solid fa-image"></i> <strong>Upload Image</strong>
+        </label>
+
+        <div class="custom-file-wrapper">
+          <input type="file" id="imageFile" name="imageFile" class="custom-file-input" accept="image/*" required>
+          <span class="custom-file-button" onclick="document.getElementById('imageFile').click()">
+            <i class="fa-solid fa-upload"></i> Choose File
+          </span>
+        </div>
+
+        <!-- preview -->
+        <div class="image-preview mt-2" style="position: relative;">
+          <img id="previewImg" src="" style="display:none; max-height:150px; border-radius:12px; box-shadow:0 3px 12px rgba(0,0,0,0.1);">
+          <span id="removeImage" style="display:none; position:absolute; top:5px; right:5px; cursor:pointer; background:rgba(0,0,0,0.6); color:#fff; border-radius:50%; padding:2px 6px; font-size:14px;">✖</span>
+        </div>
+
         <div class="invalid-feedback">Please upload an image.</div>
       </div>
 
       <!-- Price -->
       <div class="mb-3">
-        <label for="price" class="form-label">Price</label>
-        <input type="number" id="price" name="listing[price]" class="form-control" placeholder="Enter price in INR" required>
+        <label class="form-label"><i class="fa-solid fa-indian-rupee-sign"></i> <b>Price</b></label>
+        <input type="number" name="listing[price]" class="custom-input" placeholder="Enter price in INR" required>
         <div class="invalid-feedback">Please enter a price.</div>
       </div>
 
       <!-- Location -->
       <div class="mb-3">
-        <label for="location" class="form-label">Location</label>
-        <input type="text" id="location" name="listing[location]" class="form-control" placeholder="Enter location" required>
+        <label class="form-label"><i class="fa-solid fa-location-dot"></i> <strong>Location</strong></label>
+        <input type="text" name="listing[location]" class="custom-input" placeholder="Enter location" required>
         <div class="invalid-feedback">Please enter a location.</div>
       </div>
 
       <!-- Country -->
       <div class="mb-3">
-        <label for="country" class="form-label">Country</label>
-        <input type="text" id="country" name="listing[country]" class="form-control" placeholder="Enter country" required>
+        <label class="form-label"><i class="fa-solid fa-flag"></i> <strong>Country</strong></label>
+        <input type="text" name="listing[country]" class="custom-input" placeholder="Enter country" required>
         <div class="invalid-feedback">Please enter a country.</div>
       </div>
 
-      <!-- Category -->
+      <!-- CATEGORY (same UI) -->
       <div class="mb-3">
-  <label for="category" class="form-label">Category</label>
-  <select id="category" name="listing[category]" class="form-select" required>
-    <option value="">Select category</option>
-    <option value="beach">Beach</option>
-    <option value="mountain">Mountain</option>
-    <option value="villa">Villa</option>
-    <option value="trending">Trending</option>
-    <option value="city">City</option>
-    <option value="camping">Camping</option>
-    <option value="luxury">Luxury</option>
-    <option value="historic">Historic</option>
-    <option value="all">All</option>
-  </select>
-  <div class="invalid-feedback">Please select a category.</div>
-</div>
+        <label class="form-label"><i class="fa-solid fa-list"></i> <strong>Category</strong></label>
+        <div class="custom-select-wrapper">
+          <div class="custom-select-selected">Select category</div>
 
+          <div class="custom-select-options">
+            <div data-value="beach">Beach</div>
+            <div data-value="mountain">Mountain</div>
+            <div data-value="villa">Villa</div>
+            <div data-value="trending">Trending</div>
+            <div data-value="city">City</div>
+            <div data-value="camping">Camping</div>
+            <div data-value="luxury">Luxury</div>
+            <div data-value="historic">Historic</div>
+            <div data-value="all">All</div>
+          </div>
+
+          <input type="hidden" name="listing[category]" required>
+        </div>
+        <div class="invalid-feedback">Please select a category.</div>
+      </div>
+
+      <!-- AMENITIES (REPLACED WITH YOUR 6 ITEMS) -->
+      <div class="form-group mt-4">
+        <label class="form-label">
+          <i class="fa-solid fa-list-check"></i> <strong>Amenities</strong>
+        </label>
+
+        <div class="amenities-container">
+
+          <label class="amenity-item">
+            <input type="checkbox" name="listing[amenities][]" value="wifi">
+            <i class="fa-solid fa-wifi"></i> WiFi
+          </label>
+
+          <label class="amenity-item">
+            <input type="checkbox" name="listing[amenities][]" value="parking">
+            <i class="fa-solid fa-square-parking"></i> Parking
+          </label>
+
+          <label class="amenity-item">
+            <input type="checkbox" name="listing[amenities][]" value="pool">
+            <i class="fa-solid fa-person-swimming"></i> Pool
+          </label>
+
+          <label class="amenity-item">
+            <input type="checkbox" name="listing[amenities][]" value="gym">
+            <i class="fa-solid fa-dumbbell"></i> Gym
+          </label>
+
+          <label class="amenity-item">
+            <input type="checkbox" name="listing[amenities][]" value="ac">
+            <i class="fa-solid fa-snowflake"></i> AC
+          </label>
+
+          <label class="amenity-item">
+            <input type="checkbox" name="listing[amenities][]" value="restaurant">
+            <i class="fa-solid fa-utensils"></i> Dining
+          </label>
+
+        </div>
+      </div>
 
       <!-- Buttons -->
-      <div class="d-flex justify-content-between">
-        <button type="submit" class="btn btn-primary px-4">Create</button>
-        <a href="/listings" class="btn btn-outline-secondary px-4">Cancel</a>
+      <div class="d-flex justify-content-between mt-4">
+        <button type="submit" class="btn-gradient px-4">
+          <i class="fa-solid fa-plus"></i> Create
+        </button>
+        <a href="/listings" class="btn-gradient-outline px-4">
+          <i class="fa-solid fa-arrow-left"></i> Cancel
+        </a>
       </div>
 
     </form>
   </div>
 </div>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
-/* Category dropdown styling */
-.category-select {
-  border-radius: 12px;
-  padding: 8px 12px;
-  transition: 0.3s;
-  border: 1px solid #ccc;
+
+/* ---------- CARD ---------- */
+.glass-card {
+  backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.3);
+  border-radius: 18px;
+  padding: 30px;
+  border: 1px solid rgba(255,255,255,0.35);
+  max-width: 700px;
+  margin: auto;
+  animation: fadeIn 0.6s ease-in-out;
 }
-.category-select:focus {
-  border-color: #ff385c;
-  box-shadow: 0 0 8px rgba(255, 56, 92, 0.25);
+
+/* ---------- TITLE ---------- */
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(to right, #1e3c72, #2a5298);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ---------- INPUTS ---------- */
+.custom-input,
+.custom-select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  transition: 0.3s;
+  background: rgba(255,255,255,0.85);
+  color: #1f2937;
+}
+
+/* --- DARK PLACEHOLDER FIX --- */
+.custom-input::placeholder,
+textarea::placeholder {
+  color: #374151 !important; /* DARK placeholder */
+}
+
+.custom-input:focus,
+.custom-select:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.25);
   outline: none;
 }
-.category-select option {
-  padding: 8px;
+
+/* ---------- SELECT OPTIONS ---------- */
+.custom-select-wrapper {
+  position: relative;
+  font-size: 0.95rem;
 }
+
+.custom-select-selected {
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-select-selected::after {
+  content: "\f078"; /* FontAwesome chevron-down */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  float: right;
+}
+
+.custom-select-options {
+  display: none;
+  position: absolute;
+  width: 100%;
+  background: rgba(255,255,255,0.95);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.custom-select-options div {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.custom-select-options div:hover {
+  background: rgba(52,152,219,0.15);
+  color: #1e3c72;
+}
+
+/* Scrollbar */
+.custom-select-options::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-select-options::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.custom-select-options::-webkit-scrollbar-thumb {
+  background: #3498db;
+  border-radius: 10px;
+}
+
+/* ---------- FILE INPUT ---------- */
+.custom-file-input {
+  display: none;
+}
+
+.custom-file-button {
+  display: inline-block;
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+  font-size: 0.9rem;
+}
+
+.custom-file-button:hover {
+  background: linear-gradient(90deg, #2a5298, #1e3c72);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+}
+
+.image-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---------- BUTTONS ---------- */
+.btn-gradient {
+  background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 30px;
+  transition: 0.3s;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+.btn-gradient-outline {
+  background: transparent;
+  color: #1e3c72;
+  border: 2px solid #1e3c72;
+  border-radius: 30px;
+  font-weight: 600;
+  transition: 0.3s;
+  text-decoration: none;
+}
+
+.btn-gradient-outline:hover {
+  background: #1e3c72;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+/* ---------- AMENITIES ---------- */
+.amenities-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.amenity-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0,0,0,0.1);
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+  transition: 0.25s ease;
+}
+
+.amenity-item:hover {
+  background: #eef4ff;
+  border-color: #4c7df0;
+}
+
+.amenity-item i {
+  color: #2a5298;
+  font-size: 1rem;
+}
+
+.amenity-item input {
+  transform: scale(1.2);
+  margin-right: 4px;
+}
+
+/* ---------- ANIMATION ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  .glass-card {
+    padding: 20px;
+  }
+}
+
 </style>
+
+<script>
+/* CATEGORY DROPDOWN */
+document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+  const selected = wrapper.querySelector('.custom-select-selected');
+  const options = wrapper.querySelector('.custom-select-options');
+  const input = wrapper.querySelector('input[type="hidden"]');
+
+  selected.onclick = () => {
+    options.style.display = options.style.display === "block" ? "none" : "block";
+  };
+
+  options.querySelectorAll("div").forEach(o => {
+    o.onclick = () => {
+      selected.textContent = o.textContent;
+      input.value = o.dataset.value;
+      options.style.display = "none";
+    };
+  });
+
+  document.addEventListener("click", e => {
+    if (!wrapper.contains(e.target)) options.style.display = "none";
+  });
+});
+
+/* IMAGE PREVIEW */
+const imgInput = document.getElementById("imageFile");
+const preview = document.getElementById("previewImg");
+const removeBtn = document.getElementById("removeImage");
+
+imgInput.onchange = e => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e2 => {
+      preview.src = e2.target.result;
+      preview.style.display = "block";
+      removeBtn.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+removeBtn.onclick = () => {
+  imgInput.value = "";
+  preview.style.display = "none";
+  removeBtn.style.display = "none";
+};
+</script>

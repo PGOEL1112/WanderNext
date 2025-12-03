@@ -1,0 +1,245 @@
+<%- layout("layouts/boilerplate") %>
+
+<div class="container my-5">
+    <h2 class="mb-4 text-primary fw-bold">
+    <i class="fa-solid fa-clipboard-list me-2"></i> Your Listing Bookings
+  </h2>
+
+  <% if (!bookings || bookings.length === 0) { %>
+    <p class="text-muted">No bookings yet for your listings.</p>
+  <% } else { %>
+    <div class="bookings-grid">
+      <% bookings.forEach(booking => { %>
+        <div class="booking-card" data-id="<%= booking._id %>">
+          <div class="booking-header">
+            <h5><i class="fa-solid fa-user me-2"></i>@<%= booking.user && booking.user.username ? booking.user.username : "Guest" %></h5>
+            <span class="badge <%= 
+                booking.status === 'pending' ? 'bg-warning text-dark' : 
+                booking.status === 'confirmed' ? 'bg-success' : 
+                booking.status === 'canceled' ? 'bg-danger' :
+                booking.status === 'completed' ? 'bg-secondary' : ''
+            %>">
+              <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+            </span>
+          </div>
+
+          <p><i class="fa-solid fa-house me-2"></i><strong>Listing:</strong> <%= booking.listing.title %></p>
+          <p><i class="fa-solid fa-calendar-days me-2"></i><strong>Dates:</strong> <%= new Date(booking.startDate).toLocaleDateString("en-IN") %> - <%= new Date(booking.endDate).toLocaleDateString("en-IN") %></p>
+          <p><i class="fa-solid fa-users me-2"></i><strong>Guests:</strong> <%= booking.guests %></p>
+          <p><i class="fa-solid fa-indian-rupee-sign me-2"></i><strong>Total:</strong> ₹<%= booking.totalPrice.toLocaleString("en-IN") %></p>
+          <p>
+            <strong>Payment:</strong> 
+            <span class="badge 
+              <%= (booking.paymentStatus || (booking.status === 'confirmed' ? 'paid' : 'pending')) === 'paid' ? 'bg-success' :
+                  (booking.paymentStatus || 'pending') === 'refunded' ? 'bg-danger' : 'bg-warning text-dark' %>">
+              <%= ((booking.paymentStatus || (booking.status === 'confirmed' ? 'paid' : 'pending'))).toUpperCase() %>
+            </span>
+          </p>
+
+          <div class="booking-actions">
+            <% if(booking.status === 'pending'){ %>
+              <button class="btn btn-success btn-sm openModal" data-action="confirm">
+                <i class="fa-solid fa-check me-1"></i> Confirm
+              </button>
+              <button class="btn btn-danger btn-sm openModal" data-action="cancel">
+                <i class="fa-solid fa-xmark me-1"></i> Cancel
+              </button>
+            <% } else if(booking.status === 'canceled' || booking.status === 'completed'){ %>
+              <form action="/bookings/<%= booking._id %>?_method=DELETE" method="POST" class="d-inline">
+                <button class="btn btn-outline-dark btn-sm">
+                  <i class="fa-solid fa-trash me-1"></i> Delete
+                </button>
+              </form>
+            <% } else { %>
+              <p class="text-muted"><i class="fa-solid fa-ban me-1"></i>No actions available</p>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+<!-- Modal -->
+<div id="bookingActionModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3 id="modalTitle"></h3>
+    <p id="modalDesc"></p>
+    <form id="bookingActionForm" method="POST">
+      <button type="submit" class="btn btn-primary w-100" id="modalConfirmBtn"></button>
+    </form>
+  </div>
+</div>
+
+<script>
+// Modal logic
+const modal = document.getElementById('bookingActionModal');
+const closeBtn = modal.querySelector('.close');
+const modalTitle = document.getElementById('modalTitle');
+const modalDesc = document.getElementById('modalDesc');
+const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+const modalForm = document.getElementById('bookingActionForm');
+
+// Open modal
+document.querySelectorAll('.openModal').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const card = btn.closest('.booking-card');
+    const bookingId = card.dataset.id;
+    const action = btn.dataset.action;
+
+    modal.classList.add('show');
+    modalTitle.textContent = action === 'confirm' ? 'Confirm Booking' : 'Cancel Booking';
+    modalDesc.textContent = action === 'confirm' 
+      ? 'Are you sure you want to confirm this booking?' 
+      : 'Are you sure you want to cancel this booking?';
+    modalConfirmBtn.textContent = action === 'confirm' ? 'Confirm' : 'Cancel';
+    modalConfirmBtn.className = `btn w-100 ${action === 'confirm' ? 'btn-success' : 'btn-danger'}`;
+    modalForm.action = `/bookings/${bookingId}/${action}?_method=PATCH`;
+  });
+});
+
+// Close modal
+closeBtn.onclick = () => modal.classList.remove('show');
+window.onclick = e => {
+  if(e.target === modal) modal.classList.remove('show');
+};
+</script>
+
+
+<style>
+/* ---------- BOOKINGS GRID ---------- */
+.bookings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px;
+}
+
+.booking-card {
+  background: #fff;
+  padding: 22px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.booking-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 38px rgba(0,0,0,0.18);
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.badge {
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+}
+
+.bg-warning.text-dark { background:#f59e0b; color:#fff; }
+.bg-success { background:#10b981; color:#fff; }
+.bg-danger { background:#ef4444; color:#fff; }
+.bg-secondary { background:#6c757d; color:#fff; }
+
+.booking-actions {
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+
+.booking-actions button {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:600;
+  transition: all 0.2s ease;
+}
+
+.booking-actions button:hover {
+  transform: scale(1.06);
+}
+
+/* ---------- MODAL ---------- */
+.modal {
+  display: none; /* hidden by default */
+  position: fixed;
+  z-index: 1500; /* above content but below navbar if navbar z-index is 2000 */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: rgba(0,0,0,0.6);
+  pointer-events: none; /* prevent blocking when hidden */
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.modal.show {
+  display: block;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 30px;
+  border-radius: 20px;
+  max-width: 450px;
+  position: relative;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+.close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  font-size: 26px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #6366f1;
+  transition: all 0.2s ease;
+}
+
+.close:hover {
+  color: #4f46e5;
+  transform: scale(1.2);
+}
+
+.modal-content h3 { margin-bottom:12px; color:#1e3c72; font-weight:700; font-size:1.25rem; }
+.modal-content p { margin-bottom:20px; font-size:0.95rem; }
+
+#bookingActionForm button {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  font-size:1rem;
+  padding:12px;
+  border-radius:14px;
+  transition:all 0.3s ease;
+}
+
+#bookingActionForm button:hover {
+  transform:scale(1.04);
+  background:#4f46e5;
+  color:#fff;
+}
+
+/* Animations */
+@keyframes fadeIn { from {opacity:0; transform:translateY(-20px);} to {opacity:1; transform:translateY(0);} }
+
+@media (max-width: 768px) {
+  .bookings-grid { gap:16px; }
+  .booking-card { padding:18px; font-size:0.9rem; }
+}
+</style>

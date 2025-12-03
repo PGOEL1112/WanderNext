@@ -1,0 +1,229 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+  .chat-wrapper {
+    max-width: 900px;
+    margin: 30px auto;
+  }
+
+  .ticket-header-box {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #fff;
+    border-radius: 20px;
+    padding: 20px 22px;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.25);
+  }
+  .ticket-header-box h3 {
+    font-weight: 800;
+    font-size: 1.4rem;
+  }
+  .ticket-meta {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .chat-box {
+    margin-top: 18px;
+    background: #e5e7eb;
+    border-radius: 20px;
+    padding: 16px;
+    height: 460px;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .msg-row {
+    display: flex;
+    margin-bottom: 8px;
+  }
+
+  .msg-me { justify-content: flex-end; }
+  .msg-other { justify-content: flex-start; }
+
+  .msg-bubble {
+    max-width: 70%;
+    padding: 8px 12px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+  }
+
+  .msg-bubble.me {
+    background: #22c55e;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .msg-bubble.admin {
+    background: #3b82f6;
+    color: white;
+    border-bottom-left-radius: 4px;
+  }
+  .msg-bubble.owner {
+    background: #f59e0b;
+    color: #111;
+    border-bottom-left-radius: 4px;
+  }
+  .msg-bubble.user {
+    background: #ffffff;
+    color: #111827;
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg-meta {
+    font-size: 0.7rem;
+    margin-top: 2px;
+    opacity: 0.8;
+  }
+
+  .chat-input-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .chat-send-btn {
+    border-radius: 999px;
+    padding: 0 18px;
+    font-weight: 700;
+  }
+</style>
+
+<div class="chat-wrapper">
+  <!-- HEADER -->
+  <div class="ticket-header-box d-flex justify-content-between align-items-center">
+    <div>
+      <h3>Ticket #<%= ticket._id %></h3>
+      <p class="ticket-meta mb-1">
+        Issue: <b><%= ticket.issueType %></b> · Created:
+        <%= new Date(ticket.createdAt).toLocaleString("en-IN") %>
+      </p>
+      <p class="ticket-meta mb-0">
+        Status: <b><%= ticket.status %></b> · Type:
+        <b><%= ticket.chatType %></b>
+      </p>
+    </div>
+
+    <div class="text-end">
+      <p class="mb-1"><i class="fa-solid fa-user"></i> @<%= currentUser.username %></p>
+      <a href="/support/" class="btn btn-sm btn-outline-light">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- CHAT BOX -->
+  <div class="chat-box mt-3">
+    <div id="chatMessages" class="chat-messages">
+
+      <!-- Initial message (from ticket) -->
+      <div class="msg-row msg-other">
+        <div class="msg-bubble user">
+          <div><%= ticket.message %></div>
+          <div class="msg-meta">
+            <%= ticket.user && ticket.user.username ? '@' + ticket.user.username : 'System' %> ·
+            <%= new Date(ticket.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}) %>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOOP MESSAGES -->
+      <% if (ticket.messages && ticket.messages.length > 0) { %>
+        <% ticket.messages.forEach(m => { 
+          const senderId = m.sender?._id?.toString() || m.sender?.toString();
+          const isMe = senderId === currentUser._id.toString();
+          const role = m.sender && m.sender.role ? m.sender.role : 'user';
+          const time = new Date(m.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+        %>
+          <div class="msg-row <%= isMe ? 'msg-me' : 'msg-other' %>">
+            <div class="msg-bubble <%= isMe ? 'me' : role %>">
+              <div><%= m.text %></div>
+              <div class="msg-meta">
+                <%= isMe ? 'You' : (m.sender && m.sender.username ? '@' + m.sender.username : role.toUpperCase()) %> · <%= time %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+
+    </div>
+
+    <!-- INPUT -->
+    <form id="chatForm" class="chat-input-area">
+      <input 
+        id="chatInput"
+        type="text"
+        class="form-control"
+        placeholder="Type message..."
+      />
+      <button type="submit" class="btn btn-dark chat-send-btn">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+  const socket = io();
+  const roomId = "<%= ticket._id %>";
+  const currentUserId = "<%= currentUser._id %>";
+  const currentUserRole = "<%= currentUser.role %>";
+
+  socket.emit("joinRoom", roomId);
+
+  const chatMessages = document.getElementById("chatMessages");
+  const chatInput = document.getElementById("chatInput");
+  const chatForm = document.getElementById("chatForm");
+
+  // SEND MESSAGE WITHOUT RELOAD
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    const res = await fetch(`/support/${roomId}/message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+
+    const data = await res.json();
+    if (data.ok) {
+      chatInput.value = "";
+    }
+  });
+
+  // RECEIVE SOCKET MESSAGE
+  socket.on("chatMessage", (msg) => {
+    if (msg.ticketId !== roomId) return;
+
+    const isMe = msg.senderId === currentUserId;
+
+    const row = document.createElement("div");
+    row.className = "msg-row " + (isMe ? "msg-me" : "msg-other");
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble " + (isMe ? "me" : msg.role);
+
+    bubble.innerHTML = `
+      <div>${msg.text}</div>
+      <div class="msg-meta">
+        ${isMe ? "You" : msg.role.toUpperCase()} ·
+        ${new Date(msg.createdAt || Date.now()).toLocaleTimeString("en-IN",{
+          hour:"2-digit",
+          minute:"2-digit"
+        })}
+      </div>
+    `;
+
+    row.appendChild(bubble);
+    chatMessages.appendChild(row);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  });
+
+  // auto scroll to bottom on load
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+</script>

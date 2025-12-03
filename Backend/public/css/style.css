@@ -1387,3 +1387,4 @@ label.form-switch input:checked + .slider:before { transform:translateX(22px); }
   }
   body { padding-bottom: 120px; }
 }
+

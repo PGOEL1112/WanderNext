@@ -1,0 +1,256 @@
+<%- layout("layouts/boilerplate") %>
+
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<div class="lux-booking-wrapper">
+
+  <!-- HEADER -->
+  <div class="lux-header">
+    <h2>
+      <i class="fa-solid fa-calendar-check"></i>
+      Book <span class="accent"><%= listing.title %></span>
+    </h2>
+
+    <p class="lux-location">
+      <i class="fa-solid fa-location-dot"></i>
+      <%= listing.location %>, <%= listing.country %>
+    </p>
+
+    <p class="lux-price">
+      ₹<%= listing.price.toLocaleString("en-IN") %> <span>/night</span>
+    </p>
+  </div>
+
+  <!-- BOOKING FORM CARD -->
+  <div class="lux-card">
+    <form id="bookingForm"
+          action="/bookings/listings/<%= listing._id %>/premium-book"
+          method="POST">
+
+      <!-- DATE PICKERS -->
+      <div class="lux-date-group">
+        <div class="lux-input-block">
+          <label>Check-in</label>
+          <input type="text" id="startDate" name="startDate" placeholder="Choose date" required>
+        </div>
+
+        <div class="lux-input-block">
+          <label>Check-out</label>
+          <input type="text" id="endDate" name="endDate" placeholder="Choose date" required>
+        </div>
+      </div>
+
+      <!-- GUESTS -->
+      <div class="lux-input-block">
+        <label>Guests</label>
+        <input type="number" name="guests" min="1" value="1" required>
+      </div>
+
+      <!-- TOTAL PRICE -->
+      <p class="lux-total">
+        Total Price:
+        <strong>₹<span id="totalPrice"><%= listing.price %></span></strong>
+      </p>
+
+      <!-- BUTTON -->
+      <button class="lux-btn" type="submit">
+        <i class="fa-solid fa-credit-card"></i>
+        Confirm Booking
+      </button>
+
+    </form>
+  </div>
+</div>
+
+<script>
+const bookedDates = <%- JSON.stringify(bookedDates) %>
+const pricePerNight = Number("<%= listing.price %>");
+const totalPriceElem = document.getElementById("totalPrice");
+
+// Convert booked ranges to disabled dates
+const disabledRanges = bookedDates.map(b => ({
+  from: new Date(b.startDate),
+  to: new Date(b.endDate)
+}));
+
+// START PICKER
+const startPicker = flatpickr("#startDate", {
+  dateFormat: "Y-m-d",
+  disable: disabledRanges,
+  minDate: "today",
+  onChange(selected) {
+    if (selected.length) {
+      endPicker.set("minDate", selected[0].fp_incr(1));
+      calculateTotal();
+    }
+  }
+});
+
+// END PICKER
+const endPicker = flatpickr("#endDate", {
+  dateFormat: "Y-m-d",
+  disable: disabledRanges,
+  minDate: "today",
+  onChange: calculateTotal
+});
+
+// PRICE CALCULATION
+function calculateTotal() {
+  const s = startPicker.selectedDates[0];
+  const e = endPicker.selectedDates[0];
+  if (s && e && e > s) {
+    const nights = Math.round((e - s) / (1000 * 60 * 60 * 24));
+    totalPriceElem.textContent = (nights * pricePerNight).toLocaleString("en-IN");
+  }
+}
+</script>
+
+<style>
+:root {
+  --accent-1: #ff7a59;
+  --accent-2: #ff385c;
+  --primary-glow: 0 0 25px rgba(255, 56, 92, 0.45);
+  --soft-shadow: 0 10px 36px rgba(0, 0, 0, 0.12);
+}
+
+/* WRAPPER */
+.lux-booking-wrapper {
+  max-width: 680px;
+  margin: 40px auto;
+  padding: 10px;
+}
+
+/* HEADER */
+.lux-header h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+
+.lux-header .accent { font-weight: 900; }
+
+.lux-location {
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.lux-price {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--accent-2);
+}
+.lux-price span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* CARD */
+.lux-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--soft-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  margin-top: 20px;
+  animation: fadeInUp 0.35s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity:0; transform: translateY(12px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* DATE INPUTS */
+.lux-date-group {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.lux-input-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.lux-input-block label {
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.lux-input-block input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  transition: 0.25s;
+  font-size: 1rem;
+}
+
+.lux-input-block input:hover {
+  border-color: var(--accent-2);
+  box-shadow: var(--primary-glow);
+}
+
+.lux-input-block input:focus {
+  border-color: var(--accent-2);
+  box-shadow: var(--primary-glow);
+}
+
+/* FLATPICKR CUSTOM */
+.flatpickr-day.disabled {
+  background: #ef4444 !important;
+  color: #fff !important;
+  opacity: 0.85;
+}
+.flatpickr-day:hover:not(.disabled) {
+  background: var(--accent-2);
+  color: #fff;
+}
+
+/* TOTAL */
+.lux-total {
+  margin: 18px 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+.lux-total strong {
+  color: var(--accent-2);
+}
+
+/* BUTTON */
+.lux-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  font-size: 1.1rem;
+  color: #fff;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: var(--primary-glow);
+}
+.lux-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(255, 56, 92, 0.45);
+}
+.lux-btn:active {
+  transform: scale(0.97);
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .lux-date-group { flex-direction: column; }
+}
+</style>

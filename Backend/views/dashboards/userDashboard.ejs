@@ -1,0 +1,199 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+  /* Dashboard Container */
+  .dashboard-wrapper {
+    padding: 40px 0;
+    max-width: 1100px;
+    margin: auto;
+  }
+
+  /* Header */
+  .dash-header {
+    background: linear-gradient(135deg, #0f172a, #1e293b, #111827);
+    padding: 45px 35px;
+    border-radius: 25px;
+    color: white;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dash-wave {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+    filter: blur(35px);
+  }
+
+  .dash-header h2 {
+    font-weight: 800;
+    font-size: 2.2rem;
+  }
+
+  .dash-header p {
+    font-size: 1.1rem;
+    color: #d1d5db;
+  }
+
+  /* Grid Boxes */
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 22px;
+    margin-top: 30px;
+  }
+
+  .stat-card {
+    background: rgba(255,255,255,0.9);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    transition: .25s;
+    cursor: pointer;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.18);
+  }
+
+  .stat-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #fbbf24;
+  }
+
+  .stat-title {
+    font-size: 1rem;
+    color: #6b7280;
+    font-weight: 600;
+  }
+
+  .stat-value {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  /* Quick Actions */
+  .actions-section {
+    margin-top: 40px;
+  }
+
+  .actions-title {
+    font-weight: 800;
+    color: #1f2937;
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+  }
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .action-btn {
+    padding: 16px;
+    border-radius: 16px;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+    font-weight: 700;
+    transition: 0.25s;
+    text-decoration: none;
+    font-size: 1rem;
+  }
+  .action-btn:hover {
+    background: #1f2937;
+  }
+
+  .outline-gold {
+    border: 2px solid #fbbf24;
+    background: white;
+    color: #111;
+  }
+  .outline-gold:hover {
+    background: #fbbf24;
+    color: #111;
+  }
+
+</style>
+
+
+<div class="dashboard-wrapper">
+
+  <!-- HEADER -->
+  <div class="dash-header">
+    <div class="dash-wave"></div>
+
+    <h2>Hello, <%= currentUser.username %> 👋</h2>
+    <p>Welcome back to your travel dashboard! Manage your trips, wishlist, and more.</p>
+  </div>
+
+
+  <!-- QUICK STATS -->
+  <div class="quick-stats">
+
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-calendar"></i></div>
+      <div class="stat-title">Total Bookings</div>
+      <div class="stat-value"><%= totalBookings || 0 %></div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-heart"></i></div>
+      <div class="stat-title">Wishlist Items</div>
+      <div class="stat-value"><%= wishlistCount || 0 %></div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-plane-departure"></i></div>
+      <div class="stat-title">Upcoming Trips</div>
+      <div class="stat-value"><%= upcomingTrips || 0 %></div>
+    </div>
+
+  </div>
+
+
+  <!-- QUICK ACTIONS -->
+  <div class="actions-section">
+
+    <h3 class="actions-title">Quick Actions</h3>
+
+    <div class="actions-grid">
+
+      <a href="/profile" class="action-btn">
+        <i class="fa-solid fa-user me-1"></i> View Profile
+      </a>
+
+      <a href="/saved" class="action-btn outline-gold">
+        <i class="fa-solid fa-heart me-1"></i> Your Wishlist
+      </a>
+
+      <a href="/bookings" class="action-btn">
+        <i class="fa-solid fa-calendar-check me-1"></i> Your Bookings
+      </a>
+
+      <a href="/listings" class="action-btn outline-gold">
+        <i class="fa-solid fa-compass me-1"></i> Explore Listings
+      </a>
+
+      <a href="/support" class="action-btn">
+        <i class="fa-solid fa-headset me-1"></i> Support
+      </a>
+
+      <a href="/logout" class="action-btn outline-gold" style="border-color:#dc2626; color:#dc2626;">
+        <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+      </a>
+
+    </div>
+
+  </div>
+
+</div>

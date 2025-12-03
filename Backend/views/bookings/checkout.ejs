@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Complete Your Booking | Wandernext</title>
+
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .checkout-container {
+            max-width: 850px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 40px 40px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        .listing-card {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #fafafa;
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid #e8e8e8;
+        }
+
+        .listing-card img {
+            width: 140px;
+            height: 100px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .details p {
+            font-size: 1rem;
+            margin: 6px 0;
+        }
+
+        .price-box {
+            background: #fff9e6;
+            border-left: 4px solid #f8b400;
+            padding: 16px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        #pay-now-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 12px;
+            background: #ff385c;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        #pay-now-btn:hover {
+            background: #e03152;
+        }
+
+        .secure {
+            text-align: center;
+            font-size: 0.9rem;
+            margin-top: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="checkout-container">
+    
+    <h2>Complete Your Booking</h2>
+
+    <!-- Listing Card -->
+    <div class="listing-card">
+        <img src="<%= listing.image.url %>" alt="Listing Image">
+        <div class="details">
+            <h3><%= listing.title %></h3>
+            <p><strong>Location:</strong> <%= listing.location %></p>
+            <p><strong>Check-in:</strong> <%= startDate %></p>
+            <p><strong>Check-out:</strong> <%= endDate %></p>
+            <p><strong>Guests:</strong> <%= guests %></p>
+        </div>
+    </div>
+
+    <!-- Price Box -->
+    <div class="price-box">
+        <h3>Total Amount: <strong>₹<%= amount %></strong></h3>
+        <p style="margin: 4px 0; font-size: 0.9rem; color: #444;">Including all taxes & fees</p>
+    </div>
+
+    <!-- Payment Button -->
+    <button id="pay-now-btn">Pay ₹<%= amount %> Securely</button>
+
+    <p class="secure">🔒 100% Secure Payment via Razorpay</p>
+
+</div>
+
+
+<!-- Razorpay Payment Script -->
+<script>
+const options = {
+    key: "<%= razorpayKeyId %>",
+    amount: <%- amount * 100 %>,
+    currency: "INR",
+    name: "Wandernext Booking",
+    description: "Secure Payment Checkout",
+    order_id: "<%= orderId %>",
+
+    handler: async function (response) {
+        const verifyRes = await fetch('/bookings/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                listingId: "<%= listing._id %>",
+                startDate: "<%= startDate %>",
+                endDate: "<%= endDate %>",
+                guests: "<%= guests %>"
+            })
+        });
+
+        const data = await verifyRes.json();
+
+        if (data.success) {
+            // go to your pretty success page
+            window.location.href = '/bookings/payment-success';
+        } else {
+            // go to your pretty failed page
+            window.location.href = '/bookings/payment-failed';
+        }
+    },
+
+    theme: {
+        color: "#ff385c"
+    }
+};
+
+document.getElementById('pay-now-btn').onclick = function (e) {
+    e.preventDefault();
+    const rzp = new Razorpay(options);
+    rzp.open();
+};
+</script>
+
+</body>
+</html>

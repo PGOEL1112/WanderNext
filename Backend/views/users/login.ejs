@@ -1,69 +1,307 @@
 <%- layout("layouts/boilerplate") %>
 
-<div class="auth-container">
-  <div class="auth-card">
+<div class="wn-auth-page">
+  <main class="wn-card" role="main" aria-labelledby="loginHeading">
+    <header class="wn-card-head">
+      <div class="wn-logo" aria-hidden="true">
+        <i class="fa-solid fa-right-to-bracket"></i>
+      </div>
 
-    <h2 class="text-center mb-4 auth-title">
-      <i class="fa-solid fa-right-to-bracket me-2"></i> Login
-    </h2>
+      <h1 id="loginHeading" class="wn-title">Welcome Back</h1>
+      <p class="wn-sub">Login to your WanderNext account</p>
+    </header>
 
-    <!-- Flash Messages -->
-    <% if (typeof error !== 'undefined' && error.length) { %>
-      <% error.forEach(msg => { %>
-        <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
-          <%= msg %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      <% }) %>
+    <% if (error && error.length) { %>
+      <div class="wn-alert wn-alert-error" role="alert">
+        <% error.forEach(msg => { %><div><%= msg %></div><% }) %>
+      </div>
     <% } %>
 
-    <% if (typeof success !== 'undefined' && success.length) { %>
-      <% success.forEach(msg => { %>
-        <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-          <%= msg %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      <% }) %>
+    <% if (success && success.length) { %>
+      <div class="wn-alert wn-alert-success" role="status">
+        <% success.forEach(msg => { %><div><%= msg %></div><% }) %>
+      </div>
     <% } %>
 
-    <form action="/login" method="POST">
+    <form action="/login" method="POST" class="wn-form" autocomplete="on" novalidate>
 
-      <div class="input-group mb-3 input-icon-group">
-        <span class="input-icon"><i class="fa-solid fa-user"></i></span>
-        <input 
-          type="text" 
-          name="username" 
-          class="form-control auth-input" 
-          placeholder="Username" 
-          required 
-          id="username"
-          autocomplete="username"
-        >
+      <!-- Username -->
+      <div class="wn-input-group">
+        <label for="loginUser">Username</label>
+        <div class="wn-input-wrap">
+          <i class="fa-solid fa-user" aria-hidden="true"></i>
+          <input id="loginUser" type="text" name="username" placeholder="Enter username" required autocomplete="username" />
+        </div>
       </div>
 
-      <div class="input-group mb-3 input-icon-group password-wrapper">
-        <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
-        <input 
-          type="password" 
-          id="password" 
-          name="password" 
-          class="form-control auth-input" 
-          placeholder="Password" 
-          required
-          autocomplete="current-password"
-        >
-        <span class="toggle-password" onclick="togglePassword()">
-          <i class="fa-solid fa-eye"></i>
-        </span>
+      <!-- Password -->
+      <div class="wn-input-group">
+        <label for="loginpass">Password</label>
+        <div class="wn-input-wrap wn-pass-wrap">
+          <i class="fa-solid fa-lock" aria-hidden="true"></i>
+          <input type="password" id="loginpass" name="password" placeholder="Enter password" required autocomplete="current-password" />
+          <button type="button" class="toggle-password" aria-label="Show password" onclick="toggleLoginPass()">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <!-- Forgot password (right aligned) -->
+        <div class="forgot-row">
+          <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+        </div>
       </div>
 
-      <button class="btn auth-btn w-100">Login</button>
-
-      <div class="text-center mt-3">
-        <a href="/forgot-password" class="link">Forgot Password?</a>
-        <a href="/register" class="link">Don't have Account? Create Account</a>
+      <!-- Role -->
+      <div class="wn-input-group">
+        <label>Login as</label>
+        <div class="wn-input-wrap">
+          <i class="fa-solid fa-users" aria-hidden="true"></i>
+          <select name="role" required>
+            <option value="user">User</option>
+            <option value="owner">Owner</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
       </div>
+
+      <!-- Submit -->
+      <button class="wn-btn" type="submit">
+        <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+        Login
+      </button>
+
+      <!-- Go to Register -->
+      <a href="/register" class="wn-alt-btn" role="link">
+        Don't have an account? Register
+      </a>
     </form>
-
-  </div>
+  </main>
 </div>
+
+<script>
+function toggleLoginPass() {
+  const pass = document.getElementById("loginpass");
+  const icon = document.querySelector(".toggle-password i");
+
+  if (pass.type === "password") {
+    pass.type = "text";
+    icon.classList.replace("fa-eye", "fa-eye-slash");
+  } else {
+    pass.type = "password";
+    icon.classList.replace("fa-eye-slash", "fa-eye");
+  }
+}
+</script>
+
+<style>
+/* ----------- AUTH PAGE WRAPPER ----------- */
+.wn-auth-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+  background: #f3f4f6;
+  font-family: "Poppins", sans-serif;
+}
+
+/* ----------- CARD ----------- */
+.wn-card {
+  width: 430px;
+  padding: 38px 34px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(99, 102, 241, 0.10);
+  box-shadow: 0 18px 40px rgba(2,6,23,0.06);
+  animation: fadeUp 0.45s ease-out;
+}
+
+/* HEADER */
+@keyframes fadeUp {
+  from { transform: translateY(16px); opacity:0; }
+  to { transform: translateY(0); opacity:1; }
+}
+
+.wn-card-head { text-align: center; margin-bottom: 18px; }
+
+.wn-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display:flex; justify-content:center; align-items:center;
+  color:#fff; font-size:22px;
+  margin: 0 auto 10px;
+  box-shadow:0 8px 18px rgba(99,102,241,0.18);
+}
+
+.wn-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.wn-sub {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-top: 0;
+}
+
+/* -------- ALERTS -------- */
+.wn-alert {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.wn-alert-error { background: #fee2e2; color: #b91c1c; }
+.wn-alert-success { background: #dcfce7; color: #15803d; }
+
+/* ----------- FORM INPUTS ----------- */
+.wn-form { margin-top: 6px; }
+
+.wn-input-group { margin-bottom: 14px; }
+.wn-input-group label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 0.95rem;
+}
+
+.wn-input-wrap { position: relative; }
+
+.wn-input-wrap i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 15px;
+}
+
+/* Inputs & select */
+.wn-input-wrap input,
+.wn-input-wrap select {
+  width: 100%;
+  height: 48px;
+  padding-left: 42px;
+  padding-right: 60px; /* ensure space for the eye button */
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  font-weight: 500;
+  transition: 0.22s;
+}
+
+.wn-input-wrap input::placeholder { color:#374151 !important; opacity:0.6; }
+
+.wn-input-wrap input:focus,
+.wn-input-wrap select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.10);
+  outline: none;
+}
+
+/* Password toggle button - centered inside its rounded grey box */
+.wn-pass-wrap {
+  position: relative;
+  overflow: visible;
+}
+
+/* make input leave room */
+.wn-pass-wrap input { padding-right: 70px !important; }
+
+/* Use a button (accessibility) styled as compact pill */
+.wn-pass-wrap .toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 34px;
+  background: rgba(15, 23, 42, 0.06);
+  border-radius: 8px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #374151;
+  transition: background .15s, transform .08s;
+  font-size: 14px;
+}
+
+/* small focus outline for keyboard users */
+.wn-pass-wrap .toggle-password:focus {
+  outline: 2px solid rgba(99,102,241,0.18);
+  outline-offset: 2px;
+}
+
+/* hover/active */
+.wn-pass-wrap .toggle-password:hover { background: rgba(15,23,42,0.10); transform: translateY(-50%) scale(1.02); }
+
+/* Forgot password row - align right small link */
+.forgot-row { margin-top: 8px; display:flex; justify-content:flex-end; }
+.forgot-link {
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  background: transparent;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background .12s, color .12s;
+}
+.forgot-link:hover {
+  background: rgba(99,102,241,0.08);
+  color: #111827;
+}
+
+/* ----------- BUTTONS ----------- */
+.wn-btn {
+  width: 100%;
+  margin-top: 14px;
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+  box-shadow: 0 10px 24px rgba(79,70,229,0.14);
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.wn-btn:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(79,70,229,0.20); }
+
+/* ALT BUTTON */
+.wn-alt-btn {
+  margin-top: 12px;
+  display:block;
+  text-align:center;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(99,102,241,0.12);
+  background: rgba(255,255,255,0.9);
+  color:#374151;
+  font-weight:600;
+  transition: transform .12s;
+  text-decoration:none;
+}
+.wn-alt-btn:hover { transform: translateY(-2px); background: #fff; }
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .wn-card { width: 92%; padding: 22px; }
+  .wn-pass-wrap .toggle-password { right: 8px; width: 40px; height: 32px; }
+}
+</style>

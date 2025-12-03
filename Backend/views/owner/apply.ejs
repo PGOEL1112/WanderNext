@@ -1,0 +1,72 @@
+<%- layout("layouts/boilerplate") %>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+.apply-wrap { max-width: 900px; margin: 32px auto; display: grid; grid-template-columns: 1fr 420px; gap: 24px; }
+.left { padding: 22px; background: rgba(255,255,255,0.06); border-radius: 16px; color: #fff; }
+.right { padding: 22px; background: rgba(255,255,255,0.12); border-radius: 16px; }
+.field { margin-bottom: 12px; }
+label { font-weight: 700; color: #fff; }
+input, textarea, select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.02); color: #fff; }
+.small-note { color: #d1d1d1; font-size: 0.9rem; margin-top: 8px; }
+.proof-list img { max-width: 100%; border-radius: 8px; margin-bottom: 8px; }
+.apply-btn { background: #fff; color: #111; font-weight: 700; border-radius: 10px; padding: 10px 14px; }
+</style>
+
+<div class="apply-wrap">
+  <div class="left">
+    <h3>Become a Host / Owner</h3>
+    <p class="small-note">Fill the form to apply to become an owner. Admin will review and approve. Keep your contact and proof ready.</p>
+
+    <ul class="small-note">
+      <li>Phone verification may be required by Admin</li>
+      <li>Provide govt ID and property details</li>
+      <li>Do not submit fake documents — violations may ban accounts</li>
+    </ul>
+  </div>
+
+  <div class="right">
+    <h4 class="mb-3">Application Form</h4>
+
+    <% if (existing && existing.status === 'pending') { %>
+      <div class="alert alert-info">You already have a pending application submitted on <%= new Date(existing.createdAt).toLocaleString() %></div>
+    <% } else if (existing && existing.status === 'rejected') { %>
+      <div class="alert alert-warning">Your previous application was rejected. You can reapply.</div>
+    <% } %>
+
+    <form action="/owner/apply" method="POST" enctype="multipart/form-data">
+      <div class="field">
+        <label>Full Name</label>
+        <input name="fullName" required />
+      </div>
+
+      <div class="field">
+        <label>Phone</label>
+        <input name="phone" required />
+      </div>
+
+      <div class="field">
+        <label>Address</label>
+        <input name="address" required />
+      </div>
+
+      <div class="field">
+        <label>Govt ID (number)</label>
+        <input name="govtId" required />
+      </div>
+
+      <div class="field">
+        <label>Property details</label>
+        <textarea name="propertyDetails" rows="4" required></textarea>
+      </div>
+
+      <div class="field">
+        <label>Proof files (photos/documents)</label>
+        <input type="file" name="proofFiles" multiple accept="image/*,application/pdf" />
+      </div>
+
+      <button class="apply-btn" type="submit">Submit Application</button>
+    </form>
+  </div>
+</div>

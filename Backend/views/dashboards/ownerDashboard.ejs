@@ -1,0 +1,390 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+  .owner-dashboard-wrapper {
+    padding: 32px 0;
+  }
+
+  .owner-page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .owner-page-title span {
+    font-size: 2.3rem;
+    color: #f59e0b;
+  }
+
+  /* SUMMARY CARDS */
+  .owner-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 18px;
+    margin-top: 22px;
+  }
+
+  .owner-summary-card {
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #111827, #020617);
+    color: #f9fafb;
+    box-shadow: 0 12px 30px rgba(15,23,42,0.65);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .owner-summary-card::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(251,191,36,0.35), transparent 60%);
+    opacity: 0.8;
+  }
+
+  .owner-summary-icon {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #fbbf24;
+  }
+
+  .owner-summary-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ca3af;
+  }
+
+  .owner-summary-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-top: 3px;
+  }
+
+  .owner-summary-sub {
+    font-size: 0.85rem;
+    color: #d1d5db;
+  }
+
+  /* CHIP */
+  .owner-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background:#eff6ff;
+    color:#1d4ed8;
+    font-size: 0.8rem;
+    margin-top: 4px;
+  }
+
+  /* MAIN GRID (LEFT + RIGHT) */
+  .owner-main-grid {
+    margin-top: 26px;
+    display: grid;
+    grid-template-columns: 2fr 1.3fr;
+    gap: 20px;
+  }
+
+  @media(max-width: 992px){
+    .owner-main-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .owner-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 20px 22px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+    border: 1px solid #e5e7eb;
+  }
+
+  .owner-card-title {
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .owner-card-title i {
+    color: #1d4ed8;
+  }
+
+  /* BOOKINGS LIST */
+  .booking-row {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .booking-row:last-child {
+    border-bottom: none;
+  }
+
+  .booking-row-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .booking-title {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .booking-guest {
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+
+  .booking-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 0.85rem;
+  }
+
+  .booking-pill {
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .badge-status {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .badge-pending   { background:#fbbf24; color:#111827; }
+  .badge-confirmed { background:#10b981; color:#f9fafb; }
+  .badge-canceled  { background:#ef4444; color:#f9fafb; }
+  .badge-completed { background:#6b7280; color:#f9fafb; }
+
+  /* LISTINGS LIST */
+  .owner-listing-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .owner-listing-item:last-child {
+    border-bottom: none;
+  }
+
+  .owner-listing-title {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .owner-listing-sub {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .dash-quick-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    margin-right: 10px;
+  }
+
+  .dash-quick-links a i {
+    font-size: 0.9rem;
+  }
+</style>
+
+<div class="container owner-dashboard-wrapper">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+    <h2 class="owner-page-title">
+      <span><i class="fa-solid fa-chart-line"></i></span>
+      Owner Dashboard
+    </h2>
+    <span class="owner-chip">
+      <i class="fa-solid fa-user-tie"></i>
+      @<%= currentUser.username %> • <%= currentUser.role %>
+    </span>
+  </div>
+
+  <!-- SUMMARY CARDS (safe defaults if not provided) -->
+  <div class="owner-summary-grid">
+    <div class="owner-summary-card">
+      <div class="owner-summary-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+      <div class="owner-summary-label">Total Earnings</div>
+      <div class="owner-summary-value">
+        ₹<%= ((typeof totalRevenue !== "undefined" ? totalRevenue : 0) || 0).toLocaleString('en-IN') %>
+      </div>
+      <div class="owner-summary-sub">From all confirmed & paid bookings</div>
+    </div>
+
+    <div class="owner-summary-card">
+      <div class="owner-summary-icon"><i class="fa-solid fa-house-chimney"></i></div>
+      <div class="owner-summary-label">Active Listings</div>
+      <div class="owner-summary-value">
+        <%= typeof activeListings !== "undefined" ? activeListings : 0 %>
+      </div>
+      <div class="owner-summary-sub">Visible stays on WanderNext</div>
+    </div>
+
+    <div class="owner-summary-card">
+      <div class="owner-summary-icon"><i class="fa-solid fa-calendar-check"></i></div>
+      <div class="owner-summary-label">Total Bookings</div>
+      <div class="owner-summary-value">
+        <%= typeof totalBookings !== "undefined" ? totalBookings : 0 %>
+      </div>
+      <div class="owner-summary-sub">Across all your listings</div>
+    </div>
+
+    <div class="owner-summary-card">
+      <div class="owner-summary-icon"><i class="fa-solid fa-plane-departure"></i></div>
+      <div class="owner-summary-label">Upcoming Stays</div>
+      <div class="owner-summary-value">
+        <%= typeof upcomingBookings !== "undefined" ? upcomingBookings : 0 %>
+      </div>
+      <div class="owner-summary-sub">Guests arriving in the future</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="owner-main-grid">
+
+    <!-- LEFT: RECENT BOOKINGS -->
+    <div class="owner-card">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <h5 class="owner-card-title">
+          <i class="fa-solid fa-clipboard-list"></i> Recent Bookings
+        </h5>
+        <a href="/bookings/owner" class="btn btn-sm btn-outline-dark">
+          View all
+        </a>
+      </div>
+
+      <% const rb = typeof recentBookings !== "undefined" ? recentBookings : []; %>
+
+      <% if (!rb || rb.length === 0) { %>
+        <p class="text-muted mb-0">No bookings yet. Your first guest will appear here 👋</p>
+      <% } else { %>
+        <% rb.forEach(b => { %>
+          <div class="booking-row">
+            <div class="booking-row-top">
+              <div>
+                <div class="booking-title">
+                  <i class="fa-solid fa-house-chimney me-1"></i>
+                  <%= b.listing?.title || 'Listing removed' %>
+                </div>
+                <div class="booking-guest">
+                  <i class="fa-solid fa-user me-1"></i>
+                  Guest: @<%= b.user?.username || 'Guest' %>
+                </div>
+              </div>
+              <div>
+                <% 
+                  const status = b.status || 'pending';
+                  let badgeClass = 'badge-pending';
+                  if (status === 'confirmed') badgeClass = 'badge-confirmed';
+                  else if (status === 'canceled') badgeClass = 'badge-canceled';
+                  else if (status === 'completed') badgeClass = 'badge-completed';
+                %>
+                <span class="badge-status <%= badgeClass %>">
+                  <%= status.charAt(0).toUpperCase() + status.slice(1) %>
+                </span>
+              </div>
+            </div>
+
+            <div class="booking-meta">
+              <% if (b.startDate && b.endDate) { %>
+                <span class="booking-pill">
+                  <i class="fa-solid fa-calendar-day me-1"></i>
+                  <%= new Date(b.startDate).toLocaleDateString("en-IN") %> → 
+                  <%= new Date(b.endDate).toLocaleDateString("en-IN") %>
+                </span>
+              <% } %>
+              <% if (b.guests) { %>
+                <span class="booking-pill">
+                  <i class="fa-solid fa-users me-1"></i>
+                  <%= b.guests %> guests
+                </span>
+              <% } %>
+              <% if (b.totalPrice) { %>
+                <span class="booking-pill">
+                  <i class="fa-solid fa-indian-rupee-sign me-1"></i>
+                  ₹<%= b.totalPrice.toLocaleString('en-IN') %>
+                </span>
+              <% } %>
+              <% if (b.paymentStatus) { %>
+                <span class="booking-pill">
+                  <i class="fa-solid fa-credit-card me-1"></i>
+                  Payment: <%= b.paymentStatus.toUpperCase() %>
+                </span>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <!-- RIGHT: YOUR LISTINGS + QUICK LINKS -->
+    <div class="owner-card">
+      <h5 class="owner-card-title">
+        <i class="fa-solid fa-house-circle-check"></i> Your Listings
+      </h5>
+
+      <% const ml = typeof myListings !== "undefined" ? myListings : []; %>
+
+      <% if (!ml || ml.length === 0) { %>
+        <p class="text-muted">You haven’t added any listings yet.</p>
+        <a href="/listings/new" class="btn btn-sm btn-primary mt-1">
+          <i class="fa-solid fa-plus me-1"></i> Add your first listing
+        </a>
+      <% } else { %>
+        <% ml.forEach(listing => { %>
+          <div class="owner-listing-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="owner-listing-title"><%= listing.title %></div>
+                <div class="owner-listing-sub">
+                  <i class="fa-solid fa-location-dot me-1"></i>
+                  <%= listing.location %>, <%= listing.country %>
+                </div>
+              </div>
+              <a href="/listings/<%= listing._id %>/edit" class="btn btn-sm btn-outline-secondary">
+                <i class="fa-solid fa-pen"></i>
+              </a>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <hr class="mt-3 mb-2">
+
+      <div class="dash-quick-links">
+        <a href="/listings/new" class="btn btn-sm btn-outline-dark mb-2">
+          <i class="fa-solid fa-plus"></i> New Listing
+        </a>
+        <a href="/bookings/owner" class="btn btn-sm btn-outline-dark mb-2">
+          <i class="fa-solid fa-calendar-check"></i> Manage Bookings
+        </a>
+        <a href="/profile" class="btn btn-sm btn-outline-dark mb-2">
+          <i class="fa-solid fa-user"></i> View Profile
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>

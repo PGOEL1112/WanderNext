@@ -1,0 +1,278 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+/* -------------------------------------
+   ELEGANT GRADIENT HEADER
+-------------------------------------- */
+.profile-header-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #0f172a, #1e293b, #111827);
+  padding: 60px 30px 70px;
+  color: white;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+  text-align: center;
+}
+
+.header-wave {
+  position: absolute;
+  top: -40px;
+  left: -40px;
+  width: 220px;
+  height: 220px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 50%;
+  filter: blur(45px);
+}
+
+/* AVATAR */
+.profile-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid #fbbf24;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.4),
+              0 0 35px rgba(251,191,36,0.45);
+  transition: 0.35s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+/* BADGES */
+.profile-badge {
+  background: #fbbf24;
+  padding: 6px 16px;
+  border-radius: 40px;
+  font-weight: 700;
+  margin-left: 8px;
+  font-size: 0.9rem;
+  color: #111;
+  display: inline-block;
+}
+
+/* GLASS CARD */
+.glass-card {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(14px);
+  padding: 28px;
+  border-radius: 22px;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.15);
+  transition: 0.25s ease-in-out;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.20);
+}
+
+.section-title {
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 18px;
+  font-size: 1.3rem;
+}
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.stat-box {
+  padding: 20px;
+  border-radius: 16px;
+  background: #f3f4f6;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.stat-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* BADGES LIST */
+.badge-list span {
+  padding: 8px 15px;
+  border-radius: 12px;
+  background: #e5e7eb;
+  font-weight: 600;
+  margin: 5px;
+  display: inline-block;
+  border:1px solid #d1d5db;
+}
+
+/* ACTION BUTTON GRID */
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 20px;
+}
+
+.action-button {
+  padding: 16px;
+  border-radius: 16px;
+  background: #111827;
+  color: white;
+  font-weight: 700;
+  text-align: center;
+  transition: 0.25s;
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.action-button:hover {
+  background: #1f2937;
+}
+
+.action-outline {
+  border: 2px solid #fbbf24;
+  color: #111;
+  background: white;
+}
+
+.action-outline:hover {
+  background: #fbbf24;
+  color: #111;
+}
+
+/* PROGRESS BAR */
+.profile-progress {
+  height: 14px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  transition: width 0.6s ease;
+}
+</style>
+
+<div class="container py-4">
+
+  <!-- HEADER -->
+  <div class="profile-header-wrapper">
+    <div class="header-wave"></div>
+
+    <!-- ⭐ FIXED: Now shows updated user image -->
+    <img src="<%= currentUser.profileImage?.url || 'https://i.imgur.com/2XoZJZL.png' %>" 
+     class="profile-avatar">
+
+    <h2 class="mt-3"><%= currentUser.username %></h2>
+
+    <!-- BADGES -->
+    <% if (currentUser.role === "owner") { %>
+      <span class="profile-badge">🏠 Host</span>
+    <% } %>
+
+    <% if (currentUser.isVerified) { %>
+      <span class="profile-badge">✔ Verified</span>
+    <% } else { %>
+      <span class="profile-badge">✖ Not Verified</span>
+    <% } %>
+
+    <p class="mt-2"><%= currentUser.email %></p>
+
+    <!-- ⭐ FIXED: Bio + Phone -->
+    <% if (currentUser.bio) { %>
+      <p class="mt-1 text-warning fw-bold"><i class="fa-solid fa-quote-left me-1"></i><%= currentUser.bio %></p>
+    <% } %>
+
+    <% if (currentUser.phone) { %>
+      <p class="mt-1"><i class="fa-solid fa-phone me-1"></i> <%= currentUser.phone %></p>
+    <% } %>
+
+  </div>
+
+
+  <!-- PROFILE COMPLETENESS -->
+  <div class="glass-card mt-4">
+    <h5 class="section-title"><i class="fa-solid fa-chart-line me-2"></i>Profile Completeness</h5>
+
+    <% 
+      let score = 30;
+      if (currentUser.isVerified) score += 20;
+      if (currentUser.username) score += 15;
+      if (currentUser.email) score += 15;
+      if (currentUser.profileImage) score += 10;
+      if (currentUser.bio) score += 5;
+      if (currentUser.phone) score += 5;
+    %>
+
+    <div class="profile-progress">
+      <div class="progress-fill" style="width:<%= score %>%"></div>
+    </div>
+    <b><%= score %>% Complete</b>
+  </div>
+
+
+  <!-- STATS -->
+  <div class="glass-card mt-4">
+    <h5 class="section-title"><i class="fa-solid fa-chart-pie me-2"></i>Your Stats</h5>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-number"><%= totalBookings %></div>
+        <div class="stat-label">Total Bookings</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number"><%= wishlistCount %></div>
+        <div class="stat-label">Wishlist Items</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number"><%= upcomingTrips %></div>
+        <div class="stat-label">Upcoming Trips</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number"><%= reviewCount %></div>
+        <div class="stat-label">Reviews Written</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- BADGES -->
+  <div class="glass-card mt-4">
+    <h5 class="section-title"><i class="fa-solid fa-award me-2"></i>Your Badges</h5>
+
+    <div class="badge-list">
+      <% if (totalBookings >= 1) { %><span>🧳 Traveler</span><% } %>
+      <% if (totalBookings >= 5) { %><span>✈ Frequent Explorer</span><% } %>
+      <% if (reviewCount >= 3) { %><span>⭐ Super Reviewer</span><% } %>
+      <% if (wishlistCount >= 10) { %><span>💖 Collector</span><% } %>
+      <% if (currentUser.role === "owner") { %><span>🏠 Official Host</span><% } %>
+    </div>
+  </div>
+
+
+  <!-- ACTION BUTTONS -->
+  <div class="glass-card mt-4">
+    <h5 class="section-title"><i class="fa-solid fa-rocket me-2"></i>Quick Actions</h5>
+
+    <div class="actions-grid">
+      <a href="/bookings" class="action-button"><i class="fa-solid fa-calendar me-2"></i>My Bookings</a>
+      <a href="/saved" class="action-button action-outline"><i class="fa-solid fa-heart me-2"></i>Wishlist</a>
+      <a href="/profile/edit" class="action-button"><i class="fa-solid fa-user-pen me-2"></i>Edit Profile</a>
+      <a href="/download/invoices" class="action-button action-outline"><i class="fa-solid fa-file-invoice me-2"></i>All Invoices</a>
+      <a href="/support" class="action-button"><i class="fa-solid fa-headset me-2"></i>Support</a>
+      <a href="/logout" class="action-button action-outline" style="border-color:#dc2626;color:#dc2626;">
+        <i class="fa-solid fa-right-from-bracket me-2"></i>Logout
+      </a>
+    </div>
+  </div>
+
+</div>

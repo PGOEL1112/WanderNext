@@ -1,0 +1,241 @@
+<%- layout('layouts/boilerplate') %>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<div class="container admin-user-container mt-4">
+
+  <h1 class="page-title mb-2">
+    <i class="fa-solid fa-users-gear"></i> User Management
+  </h1>
+  <p class="subtitle">
+    <i class="fa-solid fa-circle-info"></i> Manage all registered users, update roles, or delete accounts.
+  </p>
+
+  <!-- Flash Messages -->
+  <% if (success && success.length) { %>
+    <% success.forEach(msg => { %>
+      <div class="alert alert-success alert-dismissible fade show premium-alert">
+        <i class="fa-solid fa-check-circle"></i> <%= msg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% }) %>
+  <% } %>
+
+  <% if (error && error.length) { %>
+    <% error.forEach(msg => { %>
+      <div class="alert alert-danger alert-dismissible fade show premium-alert">
+        <i class="fa-solid fa-triangle-exclamation"></i> <%= msg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% }) %>
+  <% } %>
+
+  <!-- Main Card -->
+  <div class="glass-card shadow-lg p-0">
+
+    <div class="card-header premium-header d-flex justify-content-between align-items-center">
+      <span class="fs-5">
+        <i class="fa-solid fa-users"></i> All Users
+      </span>
+
+      <small class="text-white-50">
+        <i class="fa-solid fa-hashtag"></i> Total: <%= users.length %>
+      </small>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="custom-table align-middle">
+        <thead class="premium-thead">
+          <tr>
+            <th><i class="fa-solid fa-hashtag"></i></th>
+            <th><i class="fa-solid fa-user"></i> Username</th>
+            <th><i class="fa-solid fa-envelope"></i> Email</th>
+            <th><i class="fa-solid fa-id-badge"></i> Role</th>
+            <th><i class="fa-solid fa-gear"></i> Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% if (users.length === 0) { %>
+            <tr>
+              <td colspan="5" class="text-center text-muted py-3">No users found</td>
+            </tr>
+
+          <% } else { users.forEach((user, idx) => { %>
+
+            <tr class="table-row-hover">
+              <td><%= idx + 1 %></td>
+
+              <td class="username-cell">
+                <i class="fa-solid fa-user-circle me-1 text-primary"></i>
+                <%= user.username %>
+              </td>
+
+              <td>
+                <i class="fa-solid fa-envelope-open me-1 text-info"></i>
+                <%= user.email %>
+              </td>
+
+              <td>
+                <form action="/admin/users/<%= user._id %>/role"
+                      method="POST"
+                      class="d-flex align-items-center justify-content-center gap-2">
+
+                  <select name="role"
+                          class="form-select form-select-sm premium-select"
+                          onchange="this.form.submit()">
+
+                    <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>User</option>
+                    <option value="owner" <%= user.role === 'owner' ? 'selected' : '' %>>Owner</option>
+                    <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                  </select>
+                </form>
+              </td>
+
+              <td>
+                <form action="/admin/users/<%= user._id %>?_method=DELETE"
+                      method="POST"
+                      onsubmit="return confirm('Are you sure you want to delete this user?');">
+
+                  <button class="action-btn delete-btn">
+                    <i class="fa-solid fa-user-xmark"></i> Delete
+                  </button>
+
+                </form>
+              </td>
+            </tr>
+
+          <% }) } %>
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<style>
+/* ------- Premium Container ------- */
+.admin-user-container {
+  animation: fadeIn 0.7s ease-in-out;
+}
+
+.page-title {
+  font-weight: 700;
+  font-size: 32px;
+  color: #1e3a8a;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 18px;
+}
+
+/* --------- Glass Card --------- */
+.glass-card {
+  backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.25);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.35);
+}
+
+/* --------- Header --------- */
+.premium-header {
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: white;
+  padding: 16px 22px;
+}
+
+/* -------- Scrollable Table -------- */
+.table-wrapper {
+  height: 460px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #2a5298;
+  border-radius: 20px;
+}
+
+/* -------- Table -------- */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.premium-thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #222;
+  color: white;
+}
+
+.premium-thead th {
+  padding: 16px;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+/* ------- Body Rows ------- */
+.custom-table tbody td {
+  padding: 16px;
+  background: #f8faff;
+  font-weight: 500;
+  text-align: center;
+  border-bottom: 8px solid #fff;
+}
+
+.table-row-hover {
+  transition: 0.25s ease;
+}
+.table-row-hover:hover {
+  transform: scale(1.012);
+  background: #eef7ff !important;
+  box-shadow: 0 6px 20px rgba(52,152,219,0.25);
+}
+
+/* ---- Select Box ---- */
+.premium-select {
+  border-radius: 10px;
+  font-weight: 600;
+  min-width: 100px;
+}
+
+/* ---- Buttons ---- */
+.action-btn {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: #e74c3c;
+  color: white;
+}
+.delete-btn:hover {
+  background: #c0392b;
+  box-shadow: 0 0 10px rgba(231,76,60,0.5);
+  transform: translateY(-2px);
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>

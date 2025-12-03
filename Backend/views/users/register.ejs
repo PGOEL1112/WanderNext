@@ -1,92 +1,308 @@
 <%- layout("layouts/boilerplate") %>
 
-<div class="auth-container">
-  <div class="auth-card">
+<div class="wn-auth-page">
+  <main class="wn-card">
+    <header class="wn-card-head">
+      <div class="wn-logo">
+        <i class="fa-solid fa-user-plus"></i>
+      </div>
 
-    <h2 class="text-center mb-4 auth-title">
-      <i class="fa-solid fa-user-plus me-2"></i> Register
-    </h2>
+      <h1 class="wn-title">Create Account</h1>
+      <p class="wn-sub">Join the WanderNext community</p>
+    </header>
 
-    <!-- Flash Messages -->
-    <% if (typeof error !== 'undefined' && error.length) { %>
-      <% error.forEach(msg => { %>
-        <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
-          <%= msg %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      <% }) %>
+    <% if (error && error.length) { %>
+      <div class="wn-alert wn-alert-error">
+        <% error.forEach(msg => { %><div><%= msg %></div><% }) %>
+      </div>
     <% } %>
 
-    <% if (typeof success !== 'undefined' && success.length) { %>
-      <% success.forEach(msg => { %>
-        <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-          <%= msg %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      <% }) %>
+    <% if (success && success.length) { %>
+      <div class="wn-alert wn-alert-success">
+        <% success.forEach(msg => { %><div><%= msg %></div><% }) %>
+      </div>
     <% } %>
 
-    <form action="/register" method="POST">
+    <form action="/register" method="POST" class="wn-form">
 
-      <div class="input-group mb-3 input-icon-group">
-        <span class="input-icon"><i class="fa-solid fa-user"></i></span>
-        <input 
-          type="text" 
-          name="username" 
-          id="username" 
-          class="form-control auth-input" 
-          placeholder="Username" 
-          required
-          autocomplete="username"
-        >
+      <!-- Username -->
+      <div class="wn-input-group">
+        <label>Username</label>
+        <div class="wn-input-wrap">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" name="username" placeholder="Enter username" required />
+        </div>
       </div>
 
-      <div class="input-group mb-3 input-icon-group">
-        <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
-        <input 
-          type="email" 
-          name="email" 
-          id="email" 
-          class="form-control auth-input" 
-          placeholder="Email" 
-          required
-          autocomplete="email"
-        >
+      <!-- Email -->
+      <div class="wn-input-group">
+        <label>Email</label>
+        <div class="wn-input-wrap">
+          <i class="fa-solid fa-envelope"></i>
+          <input type="email" name="email" placeholder="Enter email" required />
+        </div>
       </div>
 
-      <div class="input-group mb-3 input-icon-group password-wrapper">
-        <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
-        <input 
-          type="password" 
-          id="regpassword" 
-          name="password" 
-          class="form-control auth-input" 
-          placeholder="Password" 
-          required
-          autocomplete="new-password"
-        >
-        <span class="toggle-password" onclick="toggleRegPassword()">
-          <i class="fa-solid fa-eye"></i>
-        </span>
+      <!-- Role (User Only) -->
+      <div class="wn-input-group">
+        <label>Register as</label>
+        <div class="wn-input-wrap">
+          <i class="fa-solid fa-users"></i>
+          <select name="role" required>
+            <option value="user" selected>Regular User</option>
+          </select>
+        </div>
       </div>
 
-      <button class="btn auth-btn w-100">Register</button>
-      <button class="btn auth-btn w-100 text-white" onclick="window.location.href='/login'">Have Account? Login</button>
+      <!-- Password -->
+      <div class="wn-input-group">
+        <label>Password</label>
+        <div class="wn-input-wrap wn-pass-wrap">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="regpassword" name="password" placeholder="Enter password" required />
+          <span class="toggle-password" onclick="toggleRegPassword()">
+            <i class="fa-solid fa-eye"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button class="wn-btn" type="submit">
+        <i class="fa-solid fa-user-plus"></i>
+        Create Account
+      </button>
+
+      <!-- Go to Login -->
+      <a href="/login" class="wn-alt-btn">
+        Already have an account? Login
+      </a>
     </form>
-
-  </div>
+  </main>
 </div>
 
 <script>
-  function toggleRegPassword() {
-    const pass = document.getElementById('regpassword');
-    const icon = document.querySelector('#regpassword + .toggle-password i');
-    if(pass.type === 'password') {
-      pass.type = 'text';
-      icon.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-      pass.type = 'password';
-      icon.classList.replace('fa-eye-slash', 'fa-eye');
-    }
+function toggleRegPassword() {
+  const pass = document.getElementById("regpassword");
+  const icon = document.querySelector(".toggle-password i");
+
+  if (pass.type === "password") {
+    pass.type = "text";
+    icon.classList.replace("fa-eye", "fa-eye-slash");
+  } else {
+    pass.type = "password";
+    icon.classList.replace("fa-eye-slash", "fa-eye");
   }
+}
 </script>
+
+<style>
+/* ----------- AUTH PAGE WRAPPER ----------- */
+.wn-auth-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+  background: #f3f4f6; /* premium light grey */
+  font-family: "Poppins", sans-serif;
+}
+
+/* ----------- CARD ----------- */
+.wn-card {
+  width: 430px;
+  padding: 38px 34px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+  animation: fadeUp 0.5s ease-out;
+}
+
+/* HEADER */
+@keyframes fadeUp {
+  from { transform: translateY(20px); opacity:0; }
+  to { transform: translateY(0); opacity:1; }
+}
+
+.wn-card-head {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.wn-logo {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#fff;
+  font-size:24px;
+  margin: 0 auto 12px;
+  box-shadow:0 8px 18px rgba(99,102,241,0.28);
+}
+
+.wn-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.wn-sub {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* ALERT */
+.wn-alert {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.wn-alert-error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.wn-alert-success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* ----------- FORM ----------- */
+.wn-form {
+  margin-top: 10px;
+}
+
+.wn-input-group label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.wn-input-wrap {
+  position: relative;
+}
+
+.wn-pass-wrap input {
+  padding-right: 50px !important; /* space for eye icon */
+}
+
+.wn-pass-wrap {
+  position: relative !important;
+  overflow: hidden !important; /* icon ab bahar nahi jayega */
+}
+
+/* Icons */
+.wn-input-wrap i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 15px;
+}
+
+/* ----------- FIXED PLACEHOLDER (DARKER) ----------- */
+.wn-input-wrap input::placeholder,
+.wn-input-wrap select option {
+  color: #374151 !important;   /* darker placeholder */
+}
+
+/* INPUT FIELDS */
+.wn-input-wrap input,
+.wn-input-wrap select {
+  width: 100%;
+  height: 48px;
+  padding-left: 42px;
+  padding-right: 42px; /* space for eye icon */
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffffba;
+  color: #374151;
+  font-weight: 500;
+  transition: 0.25s;
+}
+
+.wn-input-wrap input:focus,
+.wn-input-wrap select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+}
+
+/* ----------- FIXED PASSWORD ICON POSITION ----------- */
+.wn-pass-wrap .toggle-password {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding-left: 2.5rem ;
+  width: 30px;           /* grey box width */
+  height: 30px;          /* grey box height */
+
+  background: rgba(0,0,0,0.08);
+  border-radius: 6px;
+  cursor: pointer;
+
+  /* THIS CENTERS THE ICON PERFECTLY */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* hover effect */
+.wn-pass-wrap .toggle-password:hover {
+  background: rgba(0,0,0,0.12);
+  color: #4b5563;
+}
+/* ----------- BUTTONS ----------- */
+.wn-btn {
+  width: 100%;
+  margin-top: 16px;
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+  box-shadow: 0 12px 26px rgba(99,102,241,0.25);
+  transition: 0.25s;
+}
+
+.wn-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(99,102,241,0.32);
+}
+
+/* ALT BUTTON */
+.wn-alt-btn {
+  margin-top: 14px;
+  display:block;
+  text-align:center;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(99,102,241,0.25);
+  background: rgba(255,255,255,0.55);
+  color:#4b5563;
+  font-weight:600;
+  transition:0.25s;
+  text-decoration:none;
+}
+
+.wn-alt-btn:hover {
+  background:#fff;
+  transform:translateY(-1px);
+}
+</style>

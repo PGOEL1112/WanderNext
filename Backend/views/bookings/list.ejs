@@ -1,0 +1,257 @@
+<%- layout("layouts/boilerplate") %>
+
+<div class="premium-container my-5">
+
+  <h2 class="premium-heading">
+    <i class="fa-solid fa-calendar-days"></i>
+    My Bookings
+  </h2>
+
+  <% if(bookings.length === 0){ %>
+
+    <div class="empty-box">
+      <img src="https://cdn-icons-png.flaticon.com/512/4076/4076500.png" alt="No bookings">
+      <p>No bookings yet.</p>
+      <a href="/listings" class="lux-btn">Explore Listings</a>
+    </div>
+
+  <% } else { %>
+
+    <div class="premium-list">
+
+      <% bookings.forEach(b => { 
+          const today = new Date();
+          if(b.status !== 'canceled' && new Date(b.endDate) < today) b.status = 'completed';
+      %>
+
+      <div class="booking-card-premium">
+
+        <!-- Title -->
+        <div class="book-top">
+          <h3><i class="fa-solid fa-hotel"></i> <%= b.listing.title %></h3>
+
+          <span class="status-badge <%= b.status %>">
+            <%= b.status.toUpperCase() %>
+          </span>
+        </div>
+
+        <!-- Details -->
+        <div class="book-details">
+          <p><i class="fa-solid fa-location-dot"></i> <%= b.listing.location %>, <%= b.listing.country %></p>
+          <p><i class="fa-solid fa-calendar"></i> 
+            <%= new Date(b.startDate).toLocaleDateString() %> → 
+            <%= new Date(b.endDate).toLocaleDateString() %>
+          </p>
+          <p><i class="fa-solid fa-user"></i> Guests: <strong><%= b.guests %></strong></p>
+        </div>
+
+        <!-- Price -->
+        <div class="book-price">
+          <i class="fa-solid fa-indian-rupee-sign"></i>
+          <%= b.totalPrice.toLocaleString("en-IN") %>
+        </div>
+
+        <% if (b.paymentStatus === 'refunded') { %>
+          <p class="refund-msg">⚠ Refund is being processed — listing was canceled by the owner.</p>
+        <% } %>
+
+        <!-- Actions -->
+        <div class="book-actions">
+
+          <% if(b.status === 'pending'){ %>
+            <button class="lux-btn-outline danger cancel-btn" data-id="<%= b._id %>">
+              <i class="fa-solid fa-xmark"></i> Cancel
+            </button>
+          <% } %>
+
+          <% if(b.status === 'canceled' || b.status === 'completed'){ %>
+            <button class="lux-btn-outline dark delete-btn" data-id="<%= b._id %>">
+              <i class="fa-solid fa-trash"></i> Delete
+            </button>
+          <% } %>
+
+          <% if(b.paymentStatus === 'paid' || b.paymentStatus === 'refunded' || b.status === 'confirmed'){ %>
+            <a href="/bookings/<%= b._id %>/invoice" class="lux-btn-outline blue">
+              <i class="fa-solid fa-file-invoice"></i> Invoice
+            </a>
+          <% } %>
+
+        </div>
+      </div>
+
+      <% }) %>
+    </div>
+
+  <% } %>
+</div>
+
+<script>
+document.querySelectorAll('.cancel-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if(confirm("Cancel this booking?")){
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/bookings/${btn.dataset.id}/cancel?_method=PATCH`;
+      document.body.appendChild(form);
+      form.submit();
+    }
+  });
+});
+
+document.querySelectorAll('.delete-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if(confirm("Delete this booking permanently?")){
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/bookings/${btn.dataset.id}?_method=DELETE`;
+      document.body.appendChild(form);
+      form.submit();
+    }
+  });
+});
+</script>
+
+<style>
+/* Premium Wrapper */
+.premium-container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Gradient Heading */
+.premium-heading {
+  font-size: 2.3rem;
+  font-weight: 900;
+  margin-bottom: 25px;
+  background: linear-gradient(90deg, #ff7a59, #ff385c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Empty State */
+.empty-box {
+  text-align: center;
+  padding: 40px;
+}
+.empty-box img {
+  width: 140px;
+  opacity: 0.85;
+}
+.empty-box p {
+  margin: 12px 0;
+  font-size: 1.1rem;
+  color: #6b7280;
+}
+
+/* Booking List Layout */
+.premium-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 22px;
+}
+
+/* Main Card */
+.booking-card-premium {
+  background: rgba(255,255,255,0.85);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+  border: 1px solid rgba(255,255,255,0.7);
+  backdrop-filter: blur(10px);
+  transition: all .25s ease;
+}
+.booking-card-premium:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 45px rgba(255,56,92,0.28);
+}
+
+/* Top row */
+.book-top {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.book-top h3 {
+  font-size:1.25rem;
+  font-weight:800;
+  color:#0f172a;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* Status Badge */
+.status-badge {
+  padding:5px 14px;
+  border-radius:999px;
+  font-size:0.75rem;
+  font-weight:800;
+  color:#fff;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+}
+.status-badge.pending { background:#f59e0b; }
+.status-badge.confirmed { background:#10b981; }
+.status-badge.canceled { background:#ef4444; }
+.status-badge.completed { background:#6b7280; }
+
+/* Details */
+.book-details p {
+  margin:4px 0;
+  color:#6b7280;
+}
+.book-price {
+  font-size:1.4rem;
+  font-weight:900;
+  margin-top:8px;
+  color:#ff385c;
+}
+
+/* Refund Message */
+.refund-msg {
+  margin-top:10px;
+  font-size:0.9rem;
+  color:#dc2626;
+  font-weight:700;
+}
+
+/* Actions */
+.book-actions {
+  margin-top:15px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+/* Buttons */
+.lux-btn {
+  background: linear-gradient(90deg,#ff7a59,#ff385c);
+  color:#fff !important;
+  padding:10px 16px;
+  border-radius:12px;
+  font-weight:800;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  box-shadow:0 10px 25px rgba(255,56,92,0.25);
+}
+
+.lux-btn-outline {
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  padding:8px 14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s ease;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.lux-btn-outline:hover { transform:scale(1.08); }
+.lux-btn-outline.danger { border-color:#ef4444; color:#b91c1c; }
+.lux-btn-outline.dark { border-color:#6b7280; color:#374151; }
+.lux-btn-outline.blue { border-color:#3b82f6; color:#1d4ed8; }
+
+</style>

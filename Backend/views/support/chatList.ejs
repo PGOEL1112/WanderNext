@@ -1,0 +1,145 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+.chatlist-wrapper {
+  max-width: 900px;
+  margin: 40px auto;
+}
+
+.chatlist-header {
+  background: linear-gradient(135deg, #0f172a, #1e293b, #111827);
+  padding: 35px 30px;
+  color: white;
+  border-radius: 22px;
+  box-shadow: 0 18px 35px rgba(0,0,0,0.25);
+}
+
+.chatlist-header h2 {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.chatlist-container {
+  margin-top: 25px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.10);
+  backdrop-filter: blur(12px);
+}
+
+.chat-item {
+  display: flex;
+  padding: 18px;
+  border-radius: 16px;
+  align-items: center;
+  background: white;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 18px;
+  transition: 0.3s ease;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+}
+
+.chat-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+}
+
+.chat-avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 18px;
+  border: 3px solid #e5e7eb;
+}
+
+.chat-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-info {
+  flex: 1;
+}
+
+.chat-info .names {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.chat-info .chat-id {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.open-chat-btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  background: #111827;
+  color: white;
+  text-decoration: none;
+}
+
+.open-chat-btn:hover {
+  background: #1f2937;
+}
+</style>
+
+
+<div class="chatlist-wrapper">
+
+  <!-- Header -->
+  <div class="chatlist-header">
+    <h2><%= title %></h2>
+    <p class="mt-2" style="opacity:0.85;">Manage and access all your active chats easily.</p>
+  </div>
+
+  <!-- Chat List Container -->
+  <div class="chatlist-container">
+
+    <% if (chats.length === 0) { %>
+      <div class="text-center p-4">
+        <i class="fa-solid fa-comments text-secondary" style="font-size:2.5rem;"></i>
+        <h5 class="mt-3 text-secondary">No chats found.</h5>
+      </div>
+    <% } %>
+
+    <% chats.forEach(ticket => { %>
+
+      <div class="chat-item">
+
+        <!-- Avatar -->
+        <div class="chat-avatar">
+          <img src="https://ui-avatars.com/api/?name=<%= ticket.participants.user.username %>&background=random&size=128" alt="user" />
+        </div>
+
+        <!-- Chat Info -->
+        <div class="chat-info">
+          <div class="names">
+            <%= ticket.participants.user.username %>  
+            <span style="color:#6b7280;"> ↔ </span>
+            <%= ticket.participants.other.username %>
+          </div>
+
+          <div class="chat-id mt-1">
+            Chat ID: <%= ticket._id %>
+          </div>
+        </div>
+
+        <!-- Open Chat Button -->
+        <a href="/support/ticket/<%= ticket._id %>" class="open-chat-btn">
+          Open Chat <i class="fa-solid fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+
+    <% }) %>
+
+    <a href="/support/" class="btn btn-sm btn-outline-dark">
+          <i class="fa-solid fa-arrow-left me-1"></i> Back
+</a>
+  </div>
+</div>

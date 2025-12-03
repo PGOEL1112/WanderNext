@@ -1,0 +1,218 @@
+<%- layout('layouts/boilerplate') %>
+
+<div class="container mt-5 admin-listing-container">
+  <h1 class="mb-4 page-title"><i class="fa-solid fa-list"></i> All Listings</h1>
+
+  <% if (!listings || listings.length === 0) { %>
+    <div class="alert alert-info">No listings found.</div>
+  <% } else { %>
+
+    <div class="table-wrapper">
+
+      <table class="custom-table align-middle">
+        <thead>
+          <tr>
+            <th><i class="fa-solid fa-hashtag"></i></th>
+            <th><i class="fa-solid fa-heading"></i> Title</th>
+            <th><i class="fa-solid fa-user"></i> Owner</th>
+            <th><i class="fa-solid fa-indian-rupee-sign"></i> Price</th>
+            <th><i class="fa-solid fa-gear"></i> Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% listings.forEach((listing, idx) => { %>
+            <tr>
+              <td><%= idx + 1 %></td>
+              <td><%= listing.title %></td>
+              <td><%= listing.owner?.username || "Unknown" %></td>
+              <td>₹<%= listing.price.toLocaleString("en-IN") %></td>
+              <td>
+                <a href="/listings/<%= listing._id %>/edit" class="action-btn edit-btn">
+                  <i class="fa-solid fa-pen-to-square"></i> Edit
+                </a>
+
+                <form action="/listings/<%= listing._id %>?_method=DELETE" 
+                      method="POST" style="display:inline;">
+                  <button class="action-btn delete-btn"
+                          onclick="return confirm('Are you sure?')">
+                    <i class="fa-solid fa-trash"></i> Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+    </div>
+
+  <% } %>
+</div>
+
+<!-- FONT AWESOME -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+
+<style>
+/* ---------- CONTAINER ---------- */
+.admin-listing-container {
+  margin-top: 12px !important;
+  padding-top: 0 !important;
+  animation: fadeIn 0.45s ease-in-out;
+}
+
+/* page title */
+/* ---------- PAGE TITLE (Updated) ---------- */
+.page-title {
+  font-weight: 800;
+  font-size: 2.2rem;           /* Bigger heading */
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 25px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+/* underline effect */
+.page-title::after {
+  content: "";
+  width: 70px;
+  height: 4px;
+  background: #3498db;
+  border-radius: 20px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: slideIn 0.6s ease-in-out;
+}
+
+/* Icon animation */
+.page-title i {
+  margin-right: 10px;
+  color: #3498db;
+  animation: pop 0.6s ease;
+}
+
+@keyframes slideIn {
+  from { width: 0; opacity: 0; }
+  to   { width: 70px; opacity: 1; }
+}
+
+@keyframes pop {
+  0%   { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
+/* ---------- TABLE WRAPPER (responsive scroll) ---------- */
+.table-wrapper {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  overflow-y: auto;      /* vertical scroll */
+  overflow-x: auto;      /* allow horizontal on very small screens */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  position: relative;
+  max-height: calc(100vh - 220px); /* fallback, JS will compute exact */
+}
+
+/* nicer scrollbar (webkit browsers) */
+.table-wrapper::-webkit-scrollbar { width: 10px; }
+.table-wrapper::-webkit-scrollbar-track { background: #f1f3f5; border-radius: 10px; }
+.table-wrapper::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#3498db,#2a5298); border-radius: 10px; }
+
+/* ---------- FIXED STICKY HEADER ---------- */
+/* Make thead sticky — works when table is inside a scrolling container */
+.custom-table { width: 100%; border-collapse: separate; border-spacing: 0 12px; display: table; table-layout: auto; }
+.custom-table thead { position: sticky; top: 0; z-index: 10; }
+.custom-table thead tr { background: linear-gradient(90deg,#222,#2a2f36); color: #fff; }
+.custom-table thead th {
+  padding: 14px 18px;
+  text-align: center;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+
+/* make header cells visually separated */
+.custom-table thead th + th { border-left: 1px solid rgba(255,255,255,0.06); }
+
+/* ---------- ROW STYLE ---------- */
+.custom-table tbody tr {
+  background: #fbfdff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  border-radius: 10px;
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s;
+}
+
+/* ensure table rows don't collapse sticky header behaviour on some browsers */
+.custom-table tbody { display: table-row-group; }
+
+/* table cells */
+.custom-table tbody tr td {
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #333;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* hover */
+.custom-table tbody tr:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 10px 30px rgba(52,152,219,0.12);
+  background: linear-gradient(180deg,#f3fbff,#eef7ff);
+}
+
+/* narrower screens: allow wrapping and left alignment for readability */
+@media (max-width: 720px) {
+  .custom-table thead th { font-size: 0.8rem; padding: 10px; }
+  .custom-table tbody tr td { padding: 10px; font-size: 0.9rem; text-align: left; white-space: normal; }
+  .page-title { font-size: 0.98rem; }
+}
+
+/* ---------- ICON + BUTTON STYLES ---------- */
+.action-btn { border: none; padding: 7px 12px; border-radius: 8px; font-size: 0.82rem; cursor: pointer; transition: all .18s; font-weight: 600; display:inline-flex; gap:8px; align-items:center; }
+.edit-btn { background: linear-gradient(180deg,#43a5ff,#2b86d6); color: #fff; }
+.edit-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(43,134,214,0.28); }
+.delete-btn { background: linear-gradient(180deg,#ff7b7b,#e04e4e); color: #fff; }
+.delete-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(224,78,78,0.28); }
+
+/* ---------- small helpers to remove big top spacing from main container ---------- */
+main.container {
+  padding-top: 6px !important;
+  margin-top: 0 !important;
+}
+
+</style>
+
+<!-- Add this JS right after style block (or at page end). It adjusts height dynamically. -->
+<script>
+(function() {
+  function setTableMaxHeight() {
+    const wrapper = document.querySelector('.table-wrapper');
+    if (!wrapper) return;
+    // Calculate available height: viewport height minus header/footer/spacing.
+    // Adjust constants (px) if you have larger header/footer.
+    const topOffset = document.querySelector('header') ? document.querySelector('header').getBoundingClientRect().bottom : 60;
+    const footerHeight = document.querySelector('footer') ? document.querySelector('footer').offsetHeight : 40;
+    const extra = 80; // extra breathing room
+    const max = Math.max(300, window.innerHeight - topOffset - footerHeight - extra);
+    wrapper.style.maxHeight = max + 'px';
+  }
+
+  window.addEventListener('resize', setTableMaxHeight);
+  window.addEventListener('orientationchange', setTableMaxHeight);
+  document.addEventListener('DOMContentLoaded', setTableMaxHeight);
+  setTimeout(setTableMaxHeight, 100); // run after layout settles
+})();
+</script>
+

@@ -1,0 +1,172 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+  body {
+    background: #eceff3;
+  }
+
+  .edit-wrapper {
+    max-width: 780px;
+    margin: 50px auto;
+  }
+
+  .edit-card {
+    background: rgba(255,255,255,0.9);
+    padding: 35px;
+    border-radius: 26px;
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(0,0,0,0.07);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+  }
+
+  .edit-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  .edit-subtext {
+    color: #6b7280;
+    margin-bottom: 25px;
+  }
+
+  /* PROFILE IMAGE PREVIEW */
+  .profile-img-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 100px;
+    object-fit: cover;
+    border: 4px solid #fbbf24;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+  }
+
+  /* CUSTOM FILE UPLOADER */
+  .file-drop-area {
+    border: 2px dashed #b3b3b3;
+    padding: 18px;
+    border-radius: 14px;
+    text-align: center;
+    transition: 0.3s;
+    background: #fafafa;
+    cursor: pointer;
+  }
+  .file-drop-area:hover {
+    border-color: #fbbf24;
+    background: #fff8db;
+  }
+  .file-drop-area i {
+    font-size: 2.2rem;
+    color: #6b7280;
+  }
+  .file-drop-area span {
+    display: block;
+    margin-top: 8px;
+    font-weight: 600;
+    color: #4b5563;
+  }
+
+  /* INPUT LABEL */
+  .form-label {
+    margin-top: 18px;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  /* BUTTONS */
+  .save-btn {
+    background: linear-gradient(135deg, #111827, #1f2937);
+    color: white;
+    padding: 14px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    margin-top: 30px;
+    font-weight: 700;
+    transition: 0.25s;
+  }
+  .save-btn:hover {
+    background: #0f172a;
+  }
+
+  .gold-outline-btn {
+    margin-top: 18px;
+    padding: 12px;
+    background: white;
+    border: 2px solid #fbbf24;
+    color: #111;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: 0.25s;
+  }
+  .gold-outline-btn:hover {
+    background: #fbbf24;
+    color: #111;
+  }
+
+  /* Ensure spacing between buttons */
+  .btn-section {
+    margin-top: 25px;
+  }
+</style>
+
+
+<div class="edit-wrapper">
+  <div class="edit-card">
+    
+    <h2 class="edit-title"><i class="fa-solid fa-user-pen me-2"></i>Edit Profile</h2>
+    <p class="edit-subtext">Update your personal information and upload a new profile picture.</p>
+
+    <div class="text-center mb-4">
+
+      <!-- ⭐ FIXED IMAGE DISPLAY -->
+      <img 
+        src="<%= currentUser.profileImage?.url || 'https://i.imgur.com/2XoZJZL.png' %>" 
+        id="preview-img"
+        class="profile-img-preview">
+    </div>
+
+    <form action="/profile/update" method="POST" enctype="multipart/form-data">
+
+      <label class="form-label">Full Name</label>
+      <input type="text" name="username" value="<%= currentUser.username %>" class="form-control" required>
+
+      <label class="form-label">Email Address</label>
+      <input type="email" name="email" value="<%= currentUser.email %>" class="form-control" required>
+
+      <label class="form-label">Profile Photo</label>
+      <div class="file-drop-area" onclick="document.getElementById('file-input').click()">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span>Click to upload profile picture</span>
+      </div>
+
+      <!-- Hidden input -->
+      <input type="file" name="profileImage" id="file-input" class="d-none" accept="image/*">
+
+      <label class="form-label">Bio</label>
+      <textarea name="bio" class="form-control" rows="3"><%= currentUser.bio || '' %></textarea>
+
+      <label class="form-label">Phone Number</label>
+      <input type="text" name="phone" value="<%= currentUser.phone || '' %>" class="form-control">
+
+      <div class="btn-section">
+        <button class="save-btn w-100">
+          <i class="fa-solid fa-check-circle me-1"></i> Save Changes
+        </button>
+
+        <a href="/profile" class="gold-outline-btn w-100 text-center d-block">
+          <i class="fa-solid fa-arrow-left me-1"></i> Back to Profile
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+  // ⭐ LIVE PREVIEW BEFORE UPLOAD
+  document.getElementById("file-input").addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      document.getElementById("preview-img").src = URL.createObjectURL(file);
+    }
+  });
+</script>

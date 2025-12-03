@@ -1,3 +1,6 @@
+// ============================================
+// Load .env (Only in development)
+// ============================================
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: "./Backend/.env" });
 }
@@ -5,7 +8,6 @@ if (process.env.NODE_ENV !== "production") {
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
-const app = express();
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError");
@@ -14,44 +16,61 @@ const MongoStore = require("connect-mongo");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
+const http = require("http");
+const { Server } = require("socket.io");
+
+// Express + Socket Server
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
 // MODELS
 const User = require("./models/user");
 
-// ROUTES
+// MIDDLEWARES
+const rateLimiter = require("./middleware/rateLimiter")();
+const fetchNotifications = require("./middleware/notifications");
+const { runAutoUpdate } = require("./middleware/updateBookingStatus");
+const { isLoggedIn, isAdmin } = require("./middleware/permissions");
+
+// ROUTES IMPORT
+const ownerApprovalRoutes = require("./routes/ownerApproval");
 const resetPasswordRoutes = require("./routes/resetPassword");
-const listings = require("./routes/listing");
-const reviews = require("./routes/reviews");
-const users = require("./routes/user");
+const listingRoutes = require("./routes/listing");
+const reviewRoutes = require("./routes/reviews");
+const userRoutes = require("./routes/user");
 const apiRoutes = require("./routes/api");
+const adminRoutes = require("./routes/admin");
+const ownerRoutes = require("./routes/owner");
+const bookingRoutes = require("./routes/bookings");
+const wishlistRoutes = require("./routes/wishlist");
+const dashboardRoutes = require("./routes/dashboard");
 
-// ---------------------------
-// 🟦 MONGODB CONNECTION
-// ---------------------------
-const Atlasdburl = process.env.ATLAS_DB_URL;
+const supportRoutes = require("./routes/support");
+const adminSupportRouter = require("./routes/adminSupport");
+const notificationRoutes = require("./routes/notifications");
 
-if (!Atlasdburl) {
-  console.error("❌ ATLAS_DB_URL not found in .env file");
+// ============================================
+// DATABASE CONNECTION
+// ============================================
+const dbUrl = process.env.ATLAS_DB_URL;
+
+if (!dbUrl) {
+  console.error("❌ ERROR: ATLAS_DB_URL missing from .env");
   process.exit(1);
 }
 
 mongoose
-  .connect(Atlasdburl, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    connectTimeoutMS: 10000,       // 30 seconds
-    serverSelectionTimeoutMS: 10000
-  })
-  .then(() => console.log("✅ MongoDB Atlas Connected Successfully!"))
+  .connect(dbUrl)
+  .then(() => console.log("✅ MongoDB Connected Successfully"))
   .catch((err) => {
-    console.error("❌ MongoDB Connection Error:", err.message);
-    console.error("💡 Tip: Make sure your IP is whitelisted in MongoDB Atlas");
+    console.error("❌ MongoDB Error:", err.message);
     process.exit(1);
   });
 
-// ---------------------------
-// 🟦 APP CONFIG
-// ---------------------------
+// ============================================
+// APP CONFIG
+// ============================================
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride("_method"));
@@ -61,48 +80,47 @@ app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// ---------------------------
-// 🟦 SESSION STORE
-// ---------------------------
+// Auto-update bookings
+setInterval(runAutoUpdate, 10 * 60 * 1000);
+
+// ============================================
+// SESSION CONFIG
+// ============================================
 const store = MongoStore.create({
-  mongoUrl: Atlasdburl,
+  mongoUrl: dbUrl,
   collectionName: "sessions",
-  ttl: 14 * 24 * 60 * 60, // 14 days
 });
 
-store.on("error", (err) => {
-  console.log("⚠ Mongo Session Store Error", err);
-});
+store.on("error", (e) => console.log("⚠ Session Store Error", e));
 
 app.use(
   session({
     store,
-    secret: process.env.SECRET || "mysupersecret",
+    secret: process.env.SECRET || "supersecret",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
-      expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-      maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
     },
   })
 );
 
 app.use(flash());
 
-// ---------------------------
-// 🟦 PASSPORT AUTH SETUP
-// ---------------------------
+// ============================================
+// PASSPORT AUTH
+// ============================================
 app.use(passport.initialize());
 app.use(passport.session());
-
 passport.use(new LocalStrategy(User.authenticate()));
+
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-// ---------------------------
-// 🟦 GLOBAL MIDDLEWARE
-// ---------------------------
+// ============================================
+// GLOBAL TEMPLATE VARIABLES
+// ============================================
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   res.locals.success = req.flash("success");
@@ -110,40 +128,110 @@ app.use((req, res, next) => {
   next();
 });
 
-// ---------------------------
-// 🟦 ROUTES
-// ---------------------------
-app.get("/", (req, res) => {
-  res.render("listings/home");
-});
+// Global Notification Loader
+app.use(fetchNotifications);
 
+// ============================================
+// RATE LIMITER
+// ============================================
+app.use("/login", rateLimiter);
+app.use("/forgot-password", rateLimiter);
+
+// ============================================
+// ROUTES START HERE
+// ============================================
+
+app.get("/", (req, res) => res.render("listings/home"));
+
+// 🔔 Notifications
+app.use("/", notificationRoutes);
+
+// USER, LOGIN, REGISTER, BECOME-OWNER, ETC.
+app.use("/", userRoutes);
+
+// PUBLIC ROUTES
 app.use("/api", apiRoutes);
-app.use("/listings", listings);
-app.use("/listings/:id/reviews", reviews);
-app.use("/", users);
+app.use("/listings", listingRoutes);
+app.use("/listings/:id/reviews", reviewRoutes);
+
+// SUPPORT SYSTEM
+app.use("/support", supportRoutes);
+
+// ADMIN SUPPORT (must come BEFORE /admin)
+app.use("/admin/support", isLoggedIn, isAdmin, adminSupportRouter);
+
+// OWNER APPROVAL SYSTEM FOR ADMIN
+app.use("/admin/owners", isLoggedIn, isAdmin, ownerApprovalRoutes);
+
+// GENERAL ADMIN ROUTES
+app.use("/admin", adminRoutes);
+
+// OWNER ROUTES
+app.use("/owner", ownerRoutes);
+
+// BOOKING, WISHLIST, DASHBOARD
+app.use("/bookings", bookingRoutes);
+app.use("/wishlist", wishlistRoutes);
+app.use("/dashboard", dashboardRoutes);
+
+// RESET PASSWORD ROUTES
 app.use("/", resetPasswordRoutes);
 
-// ---------------------------
-// 🟦 404 HANDLER
-// ---------------------------
+// Attach Socket instance globally
+app.locals.io = io;
+
+// ============================================
+// 404 HANDLER
+// ============================================
 app.use((req, res, next) => {
-  next(new ExpressError(404, "Page Not Found!"));
+  next(new ExpressError(404, "Page Not Found"));
 });
 
-// ---------------------------
-// 🟦 GLOBAL ERROR HANDLER
-// ---------------------------
+// ============================================
+// ERROR HANDLER
+// ============================================
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
   const { statusCode = 500 } = err;
-  if (!err.message) err.message = "Something went wrong!";
   res.status(statusCode).render("error", { message: err.message });
 });
 
-// ---------------------------
-// 🟦 SERVER START
-// ---------------------------
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+// ============================================
+// SOCKET.IO EVENTS
+// ============================================
+io.on("connection", (socket) => {
+  console.log("⚡ Socket connected:", socket.id);
+
+  socket.on("joinRoom", (roomId) => {
+    socket.join(roomId);
+  });
+
+  socket.on("leaveRoom", (roomId) => {
+    socket.leave(roomId);
+  });
+
+  socket.on("joinUser", (userId) => {
+    if (userId) socket.join(userId);
+  });
+
+  socket.on("chatMessage", (data) => {
+    io.to(data.room).emit("chatMessage", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("⚡ Socket disconnected:", socket.id);
+  });
+});
+
+module.exports.ioInstance = io;
+
+// ============================================
+// START SERVER
+// ============================================
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
+
+// Run booking auto-update immediately
+runAutoUpdate();

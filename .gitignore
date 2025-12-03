@@ -1,10 +1,22 @@
-# Environment Variables
+# ------------------------
+# ENVIRONMENT VARIABLES
+# ------------------------
 .env
 Backend/.env
 
-# Node modules
+# ------------------------
+# NODE MODULES
+# ------------------------
 node_modules/
 Backend/node_modules/
 
-# Local uploads
+# ------------------------
+# LOCAL UPLOADS / STORAGE
+# ------------------------
 Backend/uploads/
+
+# ------------------------
+# DEVELOPMENT / SCRIPT FILES THAT SHOULD NOT BE DEPLOYED
+# ------------------------
+Backend/createAdmin.js
+Backend/fixOwner.js

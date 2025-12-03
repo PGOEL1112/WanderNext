@@ -1,0 +1,99 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+.earnings-wrapper {
+  padding: 35px 0;
+}
+
+.earnings-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 20px;
+}
+
+.earnings-card {
+  padding: 25px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+.badge-host {
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+
+.table thead {
+  background: #f3f4f6;
+}
+
+.table th {
+  font-weight: 600;
+  color: #374151;
+}
+
+.table td {
+  color: #4b5563;
+  vertical-align: middle;
+}
+</style>
+
+<div class="container earnings-wrapper">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h2 class="earnings-title">
+      <i class="fa-solid fa-sack-dollar me-2"></i> Host Earnings
+    </h2>
+    <a href="/admin/dashboard" class="btn btn-outline-secondary btn-sm">
+      <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+    </a>
+  </div>
+
+  <div class="earnings-card">
+
+    <% if (!owners || owners.length === 0) { %>
+      <p class="text-muted mb-0">No paid bookings yet.</p>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Host</th>
+              <th>Email</th>
+              <th>Total Revenue</th>
+              <th>Bookings</th>
+              <th>Avg Revenue / Booking</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% owners.forEach((entry, index) => { 
+                 const owner = entry.owner;
+                 const totalRevenue = entry.totalRevenue || 0;
+                 const bookingsCount = entry.bookingsCount || 0;
+                 const avg = bookingsCount > 0 ? Math.round(totalRevenue / bookingsCount) : 0;
+            %>
+              <tr>
+                <td>
+                  <span class="fw-semibold">@<%= owner.username %></span>
+                  <% if (index === 0) { %>
+                    <span class="badge-host ms-2">
+                      <i class="fa-solid fa-crown me-1"></i> Top Host
+                    </span>
+                  <% } %>
+                </td>
+                <td><%= owner.email || "N/A" %></td>
+                <td>₹<%= totalRevenue.toLocaleString("en-IN") %></td>
+                <td><%= bookingsCount %></td>
+                <td>₹<%= avg.toLocaleString("en-IN") %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+  </div>
+</div>

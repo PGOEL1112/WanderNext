@@ -1,41 +1,320 @@
-<%- layout("layouts/boilerplate") %> 
+<%- layout("layouts/boilerplate") %>
 
-<!-- ===== SEARCH + FILTER BAR ===== -->
-<form action="/listings" method="GET" class="filter-bar d-flex align-items-center gap-2">
+<%
+  const safeSort = sort || "";
+  const safeAmenity = amenity || [];
+  const safeCategory = category || "all";
+  const safeSearch = search || "";
+%>
 
-  <!-- Search Input -->
-  <input type="text" name="search" class="form-control search-input"
-         placeholder="Search by title or location/country..." value="<%= search || '' %>">
+<style>
+  :root{
+    --accent:#ffb020;
+    --accent-2:#ff7a59;
+    --muted:#475569;
+    --card-bg:#ffffff;
+    --glass:rgba(255,255,255,0.6);
 
-  <!-- Min/Max Price -->
-  <input type="number" name="minPrice" class="form-control price-input"
-         placeholder="Min ₹" value="<%= minPrice || '' %>">
-  <input type="number" name="maxPrice" class="form-control price-input"
-         placeholder="Max ₹" value="<%= maxPrice || '' %>">
+    --text-dark:#111827;
+    --text-muted:#6b7280;
+    --border-light:#e5e7eb;
+    --bg-light:#f3f4f6;
+  }
 
-  <!-- Search Button in separate div -->
-  <div class="search-btn-wrapper">
-    <button type="submit" class="btn btn-dark search-btn">
-      <i class="fa-solid fa-magnifying-glass"></i> Search
-    </button>
-  </div>
+  body{
+    background:var(--bg-light);
+  }
 
-  <!-- GST Toggle in bordered div -->
-  <div class="gst-wrapper d-flex align-items-center">
-    <label class="form-switch">
-      <input type="checkbox" name="gst" value="on" <%= gst ? 'checked' : '' %> onchange="this.form.submit()">
-      <span class="slider"></span>
-    </label>
-    <span class="gst-label ms-2"><strong>GST</strong></span>
-  </div>
+  /* ---------------- FILTER BAR (Premium Glass) ---------------- */
+  .premium-filter{
+    background:rgba(255,255,255,0.7);
+    border:1px solid var(--border-light);
+    padding:16px;
+    border-radius:14px;
+    box-shadow:0 10px 26px rgba(0,0,0,0.06);
+    backdrop-filter:blur(12px);
+  }
 
-  <input type="hidden" name="category" value="<%= category || 'all' %>">
-</form>
+  .input-with-icon{
+    position:relative;
+  }
+  .input-with-icon i{
+    position:absolute;
+    left:12px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#444;
+    font-size:14px;
+    z-index:5;
+  }
+  .input-with-icon input{
+    padding-left:38px !important;
+    background:#ffffff;
+    border:1px solid var(--border-light);
+    color:var(--text-dark);
+    font-weight:600;
+  }
+  .input-with-icon input::placeholder{
+    color:#222 !important;
+    font-weight:600;
+  }
 
-<!-- ===== CATEGORY FILTER + BACK BUTTON ===== -->
-<div class="category-filter-container">
-  <div class="category-filter" role="tablist" aria-label="Categories">
-    <% const categories = [
+  .form-control,
+  .form-select{
+    background:#ffffff;
+    border:1px solid var(--border-light);
+    color:var(--text-dark);
+    font-weight:600;
+  }
+  .form-control::placeholder{
+    color:#222 !important;
+    font-weight:600;
+  }
+
+  /* GST toggle */
+  #gstToggle{
+    transform:scale(1.1);
+  }
+
+  /* Amenity Chips */
+  .amenity-chip{
+    padding:8px 14px;
+    border-radius:999px;
+    color:var(--text-dark);
+    border:1px solid var(--border-light);
+    background:#fff;
+    transition:.25s;
+    font-weight:600;
+  }
+  .amenity-chip.active{
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    border:none;
+    color:#111;
+    box-shadow:0 10px 30px rgba(255,176,32,0.2);
+  }
+
+  /* Category Pills */
+  .cat-pill{
+    padding:8px 14px;
+    background:#fff;
+    border:1px solid var(--border-light);
+    border-radius:999px;
+    color:var(--text-muted);
+    font-weight:700;
+    transition:.25s;
+  }
+  .cat-pill.active{
+    background:linear-gradient(90deg,#ffe6b3,#ffd3c2);
+    border-color:#ffb020;
+    color:#111;
+    box-shadow:0 8px 22px rgba(255,176,32,0.18);
+  }
+  .cat-pill:hover{
+    transform:translateY(-4px);
+  }
+
+  /* ---------------- LISTING CARDS ---------------- */
+  .listing-card{
+    background:#ffffff;
+    border:1px solid var(--border-light);
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 12px 32px rgba(0,0,0,0.08);
+    transition:.25s;
+  }
+  .listing-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 20px 50px rgba(0,0,0,0.12);
+  }
+
+  .listing-title{
+    color:var(--text-dark);
+    font-weight:600 !important;   /* LIGHTER AS YOU REQUESTED */
+  }
+  .listing-title a{
+    text-decoration:none;
+    color:var(--text-dark);
+  }
+
+  .meta{
+    color:var(--text-muted);
+  }
+
+  .price{
+    color:var(--accent);
+    font-weight:900;
+  }
+
+  /* Amenity badge */
+  .amenity{
+    background:#f9fafb;
+    border:1px solid var(--border-light);
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:0.82rem;
+    color:var(--text-muted);
+  }
+
+  .amenity.more{
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    color:#111 !important;               /* FIXED COLOR */
+    border:none;
+    font-weight:800;
+    box-shadow:0 8px 16px rgba(255,176,32,.15);
+  }
+
+  /* ---------------- BUTTONS (View + Book) ---------------- */
+
+  /* VIEW */
+  .btn-primary-sm{
+    background:#fff;
+    border:1px solid var(--border-light);
+    color:var(--text-dark);
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:700;
+    transition:.2s;
+  }
+  .btn-primary-sm:hover{
+    background:#f7f7f7;
+    transform:translateY(-3px);
+    box-shadow:0 6px 14px rgba(0,0,0,0.1);
+  }
+
+  /* BOOK */
+  .btn-cta-sm{
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    color:#111;
+    padding:10px 14px;
+    border-radius:10px;
+    border:none;
+    font-weight:800;
+    transition:.2s;
+  }
+  .btn-cta-sm:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 22px rgba(255,176,32,.25);
+  }
+
+  /* Save button */
+  .save-btn{
+    background:#fff;
+    border:1px solid var(--border-light);
+    border-radius:50%;
+    color:var(--text-dark);
+    padding:8px;
+  }
+  .save-btn.saved{
+    color:#ff4d4d;
+    border-color:#ffb3b3;
+  }
+
+  .top-pick{
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    padding:6px 10px;
+    border-radius:10px;
+    color:#111;
+    box-shadow:0 10px 24px rgba(255,176,32,.18);
+    font-weight:700;
+  }
+
+  /* Pagination */
+  .pagination .page-link{
+    color:#111;
+    border-radius:8px;
+    border:1px solid var(--border-light);
+  }
+  .pagination .active .page-link{
+    background:var(--accent);
+    border:none;
+    color:#111;
+  }
+
+</style>
+
+<div class="listings-page container" style="max-width:1180px; margin: 18px auto;">
+
+  <!-- ---------------- FILTER BAR ---------------- -->
+  <form id="filterForm" action="/listings" method="GET"
+        class="premium-filter d-flex align-items-start gap-3 flex-wrap">
+
+    <div class="filter-left" style="flex:1; min-width:220px;">
+      <label class="visually-hidden">Search listings</label>
+
+      <!-- FIXED SEARCH ICON INSIDE INPUT -->
+      <div class="input-with-icon">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="searchInput" name="search" class="form-control"
+               placeholder="Search by title, city or keyword..." value="<%= safeSearch %>">
+      </div>
+
+      <div class="mt-2 d-flex gap-2">
+        <input name="minPrice" type="number" class="form-control"
+               placeholder="Min ₹" value="<%= minPrice || '' %>">
+        <input name="maxPrice" type="number" class="form-control"
+               placeholder="Max ₹" value="<%= maxPrice || '' %>">
+      </div>
+    </div>
+
+    <div class="filter-right" style="min-width:320px; display:flex; gap:8px; flex-wrap:wrap;">
+
+      <select id="sortSelect" name="sort" class="form-select">
+        <option value="">Sort By</option>
+        <option value="priceLow" <%= safeSort==='priceLow'?'selected':'' %>>Price: Low → High</option>
+        <option value="priceHigh" <%= safeSort==='priceHigh'?'selected':'' %>>Price: High → Low</option>
+        <option value="recent" <%= safeSort==='recent'?'selected':'' %>>Most Recent</option>
+      </select>
+
+      <div class="gst-toggle">
+        <label class="me-2" style="font-weight:700;">GST</label>
+        <input id="gstToggle" type="checkbox" name="gst" value="on" <%= gst?'checked':'' %> />
+      </div>
+
+      <!-- Amenity chips -->
+      <div id="amenitiesControl" class="amenities-control">
+        <% const allAmenities=[
+          {k:'wifi',icon:'fa-wifi',label:'WiFi'},
+          {k:'parking',icon:'fa-square-parking',label:'Parking'},
+          {k:'pool',icon:'fa-person-swimming',label:'Pool'},
+          {k:'gym',icon:'fa-dumbbell',label:'Gym'},
+          {k:'ac',icon:'fa-snowflake',label:'AC'},
+          {k:'restaurant',icon:'fa-utensils',label:'Dining'}
+        ]; %>
+
+        <% allAmenities.forEach(a=>{ 
+             const active = Array.isArray(safeAmenity) ? safeAmenity.includes(a.k) : (safeAmenity===a.k);
+        %>
+        <button type="button" class="amenity-chip <%= active?'active':'' %>" data-value="<%= a.k %>">
+          <i class="fa-solid <%= a.icon %>"></i><%= a.label %>
+        </button>
+        <% }) %>
+      </div>
+
+      <input type="hidden" name="category" value="<%= safeCategory %>">
+
+      <div id="amenitiesHiddenInputs">
+        <% if (Array.isArray(safeAmenity)) safeAmenity.forEach(a=>{ %>
+          <input type="hidden" name="amenity" value="<%= a %>">
+        <% }) %>
+      </div>
+
+      <button class="btn btn-apply"
+         style="background:linear-gradient(90deg,var(--accent),var(--accent-2)); border:none; color:#111; border-radius:10px; padding:10px 14px; font-weight:800;">
+        <i class="fa-solid fa-filter me-2"></i> Apply
+      </button>
+
+      <a href="/listings" class="btn btn-reset"
+         style="background:#fff; border:1px solid var(--border-light); color:#111; border-radius:10px; padding:10px 14px;">
+        <i class="fa-solid fa-rotate-left me-1"></i> Reset
+      </a>
+
+    </div>
+  </form>
+
+  <!-- ---------------- CATEGORY PILLS ---------------- -->
+  <div class="category-filter mt-3 mb-2">
+    <% const categoriesList=[
+      {id:"all",icon:"fa-globe",label:"All"},
       {id:"beach",icon:"fa-umbrella-beach",label:"Beach"},
       {id:"mountain",icon:"fa-mountain",label:"Mountain"},
       {id:"villa",icon:"fa-hotel",label:"Villa"},
@@ -44,65 +323,189 @@
       {id:"camping",icon:"fa-campground",label:"Camping"},
       {id:"luxury",icon:"fa-gem",label:"Luxury"},
       {id:"historic",icon:"fa-landmark",label:"Historic"},
-      {id:"all",icon:"fa-globe",label:"All"}
     ] %>
 
-    <% categories.forEach(cat => { %>
-      <a href="/listings?category=<%= cat.id %>&search=<%= encodeURIComponent(search||'') %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&gst=<%= gst ? 'on' : 'off' %>"
-         class="category-item <%= (category===cat.id || (!category && cat.id==='all')) ? 'active' : '' %>">
-        <i class="fa-solid <%= cat.icon %>"></i><span><%= cat.label %></span>
+    <% categoriesList.forEach(cat=>{ %>
+      <a class="cat-pill <%= safeCategory===cat.id?'active':'' %>"
+         href="/listings?category=<%= cat.id %>&search=<%= safeSearch %>&minPrice=<%= minPrice||'' %>&maxPrice=<%= maxPrice||'' %>&sort=<%= safeSort %>">
+        <i class="fa-solid <%= cat.icon %>"></i> <%= cat.label %>
       </a>
     <% }) %>
   </div>
 
-  <!-- Back button -->
-  <a href="/" class="btn btn-dark back-btn">
-    <i class="fa-solid fa-arrow-left"></i> Back
-  </a>
+  <!-- ---------------- LISTINGS GRID ---------------- -->
+  <div class="row g-4 mt-3">
 
-</div>
-
-<!-- ===== LISTING GRID ===== -->
-<div class="listing-grid">
-  <% if (!allListings || allListings.length === 0) { %>
-    <div class="empty-state">
-      <h4>No listings found</h4>
-      <p>Try clearing filters or search again.</p>
-    </div>
-  <% } %>
-
-  <% allListings.forEach(listing => { %>
-    <div class="listing-card">
-      <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
-      <div class="listing-info">
-        <h3><a href="/listings/<%= listing._id %>"><%= listing.title %></a></h3>
-        <p><%= listing.location %>, <%= listing.country %></p>
-
-        <% if (gst) { %>
-          <p class="price">₹<%= (listing.priceWithGst || Math.round(listing.price*1.18)).toLocaleString("en-IN") %>/night
-            <small class="text-muted">(GST included)</small></p>
-        <% } else { %>
-          <p class="price">₹<%= Number(listing.price).toLocaleString("en-IN") %>/night</p>
-        <% } %>
+    <% if (!allListings.length){ %>
+      <div class="col-12 text-center p-5" style="background:#fff; border-radius:14px; border:1px solid var(--border-light); box-shadow:0 10px 24px rgba(0,0,0,.08);">
+        <h4 style="color:#111;">No listings found</h4>
+        <p style="color:var(--muted); font-weight:600;">Try clearing filters or changing search.</p>
       </div>
-    </div>
-  <% }) %>
+    <% } %>
+
+    <% allListings.forEach(listing=>{ %>
+      <div class="col-lg-4 col-md-6">
+        <article class="listing-card">
+
+          <a href="/listings/<%= listing._id %>" class="img-wrap">
+            <img src="<%= listing.image?.url || '/images/fallback.jpg' %>" style="width:100%; height:210px; object-fit:cover;">
+            <% if(listing.topPick){ %>
+              <div class="top-pick"><i class="fa-solid fa-star"></i> Top pick</div>
+            <% } %>
+          </a>
+
+          <div class="listing-body p-3">
+
+            <div class="title-row d-flex justify-content-between">
+              <h3 class="listing-title">
+                <a href="/listings/<%= listing._id %>">
+                  <i class="fa-solid fa-hotel me-1"></i> <%= listing.title %>
+                </a>
+              </h3>
+
+              <% if(currentUser){ %>
+                <form class="save-form" data-id="<%= listing._id %>">
+                  <% const saved = currentUser.savedListings?.some(id=>String(id)===String(listing._id)); %>
+                  <button type="submit" class="save-btn <%= saved?'saved':'' %>">
+                    <i class="fa-solid <%= saved?'fa-heart':'fa-heart-circle-plus' %>"></i>
+                  </button>
+                </form>
+              <% } %>
+
+            </div>
+
+            <p class="meta"><i class="fa-solid fa-location-dot me-1"></i> <%= listing.location %>, <%= listing.country %></p>
+
+            <div class="price-row d-flex align-items-baseline gap-2">
+              <div class="price">₹<%= gst ? Math.round(listing.price*1.18).toLocaleString("en-IN") : Number(listing.price).toLocaleString("en-IN") %></div>
+              <div class="price-sub" style="color:var(--muted);">/ night <%= gst?'(GST incl)':'' %></div>
+            </div>
+
+            <% if(listing.amenities?.length){ %>
+              <div class="amenities-list d-flex gap-2 flex-wrap mt-2">
+                <% listing.amenities.slice(0,3).forEach(a=>{ %>
+                  <span class="amenity"><i class="fa-solid fa-check"></i> <%= a %></span>
+                <% }) %>
+                <% if(listing.amenities.length>3){ %>
+                  <span class="amenity more">+<%= listing.amenities.length-3 %> more</span>
+                <% } %>
+              </div>
+            <% } %>
+
+            <div class="listing-actions d-flex gap-2 mt-3">
+
+              <!-- BETTER VIEW BUTTON -->
+              <a class="btn-primary-sm w-50 text-center" href="/listings/<%= listing._id %>">
+                <i class="fa-solid fa-eye me-1"></i> View
+              </a>
+
+              <!-- BETTER BOOK BUTTON -->
+              <% if(currentUser){ %>
+                <a href="/bookings/listings/<%= listing._id %>/premium-book"
+                   class="btn-cta-sm w-50 text-center">
+                  <i class="fa-solid fa-credit-card me-1"></i> Book
+                </a>
+              <% } else { %>
+                <a href="/login" class="btn-cta-sm w-50 text-center">
+                  <i class="fa-solid fa-right-to-bracket me-1"></i> Login
+                </a>
+              <% } %>
+
+            </div>
+
+          </div>
+
+        </article>
+      </div>
+    <% }) %>
+
+  </div>
+
 </div>
 
+<!-- ========================= SCRIPTS (client) ========================= -->
 <script>
-  const searchInput = document.querySelector('.search-input');
-  const listingsGrid = document.querySelector('.listing-grid');
+(function () {
+  // debounce util
+  function debounce(fn, wait){ let t; return function(...a){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,a), wait)} }
 
-  searchInput.addEventListener('input', function() {
-    const query = this.value;
-    fetch(`/listings?search=${encodeURIComponent(query)}&minPrice=<%= minPrice || '' %>&maxPrice=<%= maxPrice || '' %>&gst=<%= gst ? 'on' : 'off' %>`)
-      .then(res => res.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newListings = doc.querySelector('.listing-grid').innerHTML;
-        listingsGrid.innerHTML = newListings;
-      })
-      .catch(err => console.error(err));
+  const filterForm = document.getElementById('filterForm');
+  const searchInput = document.getElementById('searchInput');
+  const sortSelect = document.getElementById('sortSelect');
+  const gstToggle = document.getElementById('gstToggle');
+
+  // amenities UI
+  const amenitiesControl = document.getElementById('amenitiesControl');
+  const hiddenInputsContainer = document.getElementById('amenitiesHiddenInputs');
+
+  function rebuildHiddenAmenityInputs(selectedValues) {
+    hiddenInputsContainer.innerHTML = '';
+    selectedValues.forEach(v => {
+      const input = document.createElement('input');
+      input.type = 'hidden'; input.name = 'amenity'; input.value = v;
+      hiddenInputsContainer.appendChild(input);
+    });
+  }
+
+  // initialize selected from server
+  const initialAmenityInputs = Array.from(hiddenInputsContainer.querySelectorAll('input[name="amenity"]')).map(i=>i.value);
+  let selectedAmenities = initialAmenityInputs.slice();
+
+  amenitiesControl?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.amenity-chip');
+    if (!btn) return;
+    const value = btn.dataset.value;
+    if (!value) return;
+
+    if (selectedAmenities.includes(value)) {
+      selectedAmenities = selectedAmenities.filter(x => x !== value);
+      btn.classList.remove('active');
+    } else {
+      selectedAmenities.push(value);
+      btn.classList.add('active');
+    }
+    rebuildHiddenAmenityInputs(selectedAmenities);
+    debounce(()=> filterForm.submit(), 380)();
   });
+
+  // basic submit triggers
+  searchInput?.addEventListener('input', debounce(()=> filterForm.submit(), 650));
+  searchInput?.addEventListener('keydown', (e)=> { if (e.key === 'Enter'){ e.preventDefault(); filterForm.submit(); }});
+  sortSelect?.addEventListener('change', ()=> filterForm.submit());
+  gstToggle?.addEventListener('change', ()=> filterForm.submit());
+  document.querySelectorAll('input[name="minPrice"], input[name="maxPrice"]').forEach(inp => inp.addEventListener('change', ()=> filterForm.submit()));
+
+  // Save / Unsave listing
+  async function handleSaveFormSubmit(e){
+    e.preventDefault();
+    const form = e.currentTarget;
+    const id = form.dataset.id;
+    const btn = form.querySelector('button');
+    try {
+      const res = await fetch(`/listings/${id}/save`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      const data = await res.json();
+      if (data.saved) {
+        btn.innerHTML = '<i class="fa-solid fa-heart"></i>';
+        btn.classList.add('saved');
+        btn.setAttribute('aria-pressed','true');
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-heart-circle-plus"></i>';
+        btn.classList.remove('saved');
+        btn.setAttribute('aria-pressed','false');
+      }
+    } catch (err) {
+      if (err && err.status === 401) { window.location.href = '/login'; }
+      else console.error(err);
+    }
+  }
+
+  function attachSaveListeners(){
+    document.querySelectorAll('.save-form').forEach(f=>{
+      f.removeEventListener('submit', handleSaveFormSubmit);
+      f.addEventListener('submit', handleSaveFormSubmit);
+    });
+  }
+  attachSaveListeners();
+
+})();
 </script>

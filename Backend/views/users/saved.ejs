@@ -1,0 +1,234 @@
+<%- layout('layouts/boilerplate') %>
+
+<div class="saved-wrapper">
+  <h1 class="saved-heading">💖 My Wishlist</h1>
+
+  <% if(saved.length === 0){ %>
+    <div class="empty-state">
+      <img src="https://cdn-icons-png.flaticon.com/512/4076/4076505.png" alt="Empty" />
+      <h2>No Saved Listings Yet</h2>
+      <p>Start exploring and save your favourite stays!</p>
+      <a href="/listings" class="explore-btn">Explore Listings</a>
+    </div>
+  <% } else { %>
+
+    <div class="saved-grid">
+      <% saved.forEach(listing => { %>
+        <div class="saved-card">
+          
+          <div class="saved-img-wrap">
+            <img src="<%= listing.image?.url || '/images/default-listing.jpg' %>" alt="<%= listing.title %>">
+            <button class="remove-btn save-form" data-id="<%= listing._id %>">
+              <i class="fa-solid fa-heart-crack"></i>
+            </button>
+          </div>
+
+          <div class="saved-body">
+            <h3 class="saved-title"><%= listing.title %></h3>
+
+            <div class="saved-meta">
+              <span><i class="fa-solid fa-location-dot"></i> <%= listing.location %></span>
+              <span><i class="fa-solid fa-tag"></i> ₹<%= listing.price.toLocaleString("en-IN") %></span>
+            </div>
+
+            <a href="/listings/<%= listing._id %>" class="view-btn">
+              View Details
+            </a>
+          </div>
+
+        </div>
+      <% }) %>
+    </div>
+
+  <% } %>
+
+</div>
+
+<style>
+:root {
+  --accent: #ff7a59;
+  --accent-dark: #ff385c;
+  --card-bg: #ffffff;
+  --glass: rgba(255,255,255,0.65);
+}
+
+/* Page Wrapper */
+.saved-wrapper {
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+/* Title */
+.saved-heading {
+  text-align: center;
+  font-size: 2.7rem;
+  font-weight: 800;
+  background: linear-gradient(90deg,#ff7a59,#ff385c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 40px;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff, #fef2f2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+}
+.empty-state img {
+  width: 120px;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));
+  margin-bottom: 15px;
+}
+.empty-state h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.empty-state p {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+.explore-btn {
+  padding: 12px 22px;
+  border-radius: 12px;
+  background: linear-gradient(90deg,#ff7a59,#ff385c);
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 10px 25px rgba(255,56,92,0.25);
+  transition: 0.3s;
+}
+.explore-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(255,56,92,0.35);
+}
+
+/* GRID */
+.saved-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 24px;
+}
+
+/* CARD */
+.saved-card {
+  background: var(--card-bg);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+  transition: 0.3s;
+  position: relative;
+}
+.saved-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+/* IMAGE SECTION */
+.saved-img-wrap {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+.saved-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: 0.35s;
+}
+.saved-card:hover img {
+  transform: scale(1.07);
+}
+
+/* Remove button */
+.remove-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--glass);
+  border: none;
+  backdrop-filter: blur(5px);
+  padding: 8px 10px;
+  border-radius: 50%;
+  color: var(--accent-dark);
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: 0.25s;
+}
+.remove-btn:hover {
+  background: #ffe4e8;
+}
+
+/* CARD BODY */
+.saved-body {
+  padding: 16px;
+}
+
+.saved-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #222;
+}
+
+/* Meta info */
+.saved-meta {
+  font-size: 0.95rem;
+  color: #666;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.saved-meta i {
+  color: var(--accent-dark);
+  margin-right: 5px;
+}
+
+/* VIEW BUTTON */
+.view-btn {
+  width: 100%;
+  text-align: center;
+  display: block;
+  padding: 10px;
+  background: linear-gradient(90deg,#ff7a59,#ff385c);
+  color: white;
+  font-weight: 700;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: 0.28s;
+  box-shadow: 0 4px 18px rgba(255,56,92,0.25);
+}
+.view-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(255,56,92,0.35);
+}
+
+/* Mobile Optimization */
+@media(max-width: 576px){
+  .saved-heading { font-size: 2.2rem; }
+  .saved-card { margin-bottom: 10px; }
+}
+</style>
+
+<script>
+// remove saved item
+document.querySelectorAll('.save-form').forEach(btn => {
+  btn.addEventListener('click', async e => {
+    e.preventDefault();
+    const id = btn.dataset.id;
+
+    const res = await fetch(`/listings/${id}/save`, { method:'POST' });
+    const data = await res.json();
+
+    if(data.ok && !data.saved){
+      btn.closest('.saved-card').style.opacity = "0";
+      setTimeout(() => btn.closest('.saved-card').remove(), 300);
+    }
+  });
+});
+</script>

@@ -1,0 +1,364 @@
+<%- layout("layouts/boilerplate") %> 
+
+<style>
+.dashboard-wrapper {
+  padding: 35px 0;
+}
+
+.dashboard-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 10px;
+}
+
+.dashboard-sub {
+  color: #6b7280;
+}
+
+/* ===== STAT CARDS ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 22px;
+  margin-top: 25px;
+}
+
+.stat-card {
+  padding: 22px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ffffffdd, #f1f5f9);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  transition: 0.25s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 34px rgba(0,0,0,0.2);
+}
+
+.stat-icon {
+  font-size: 2.3rem;
+  margin-bottom: 8px;
+}
+
+.stat-title {
+  font-size: 0.92rem;
+  color: #64748b;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-top: 5px;
+  color: #0f172a;
+}
+
+/* Support Card Special */
+.support-card {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border-left: 6px solid #f97316;
+}
+
+/* ===== CHART + TABLE CARDS ===== */
+.card-section {
+  padding: 25px;
+  margin-top: 40px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+/* Table */
+.table thead {
+  background: #f1f5f9;
+}
+
+.table th {
+  font-weight: 600;
+  color: #334155;
+}
+
+.table td {
+  color: #475569;
+}
+
+.badge {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.bg-paid { background: #10b981; color: #fff; }
+.bg-pending { background: #f59e0b; color: #fff; }
+.bg-refunded { background: #ef4444; color: #fff; }
+.bg-confirmed { background: #0ea5e9; color: #fff; }
+.bg-canceled { background: #dc2626; color: #fff; }
+.bg-completed { background: #6b7280; color: #fff; }
+
+
+/* WRAPPER NAV */
+.admin-premium-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 14px 20px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  margin: 20px 0 28px;
+}
+
+/* COMMON BUTTON STYLE */
+.admin-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 18px;
+  border-radius: 12px;
+
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #374151;
+
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+
+  transition: 0.25s ease;
+}
+
+/* ICON STYLE */
+.admin-nav-btn i {
+  font-size: 1.1rem;
+  color: #6366f1;
+}
+
+/* PREMIUM HOVER EFFECT */
+.admin-nav-btn:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* ACTIVE LOOK (OPTIONAL - if you want dynamic matching tab) */
+.admin-nav-btn.active {
+  background: #eef2ff;
+  border-color: #6366f1;
+  color: #111827;
+  box-shadow: 0 8px 20px rgba(99,102,241,0.12);
+}
+
+.admin-nav-btn.active i {
+  color: #4f46e5;
+}
+
+/* INDIVIDUAL COLOR ACCENTS (SOFTLY MATCHESED) */
+
+.btn-analytics i  { color: #4f46e5; }
+.btn-earnings i   { color: #16a34a; }
+.btn-users i      { color: #0ea5e9; }
+.btn-listings i   { color: #f59e0b; }
+.btn-support i    { color: #f97316; }
+.btn-owner i      { color: #6b21a8; }
+
+/* On hover stronger icon vibe */
+.admin-nav-btn:hover i {
+  transform: scale(1.1);
+  transition: 0.2s;
+}
+
+/* Responsive Fix */
+@media (max-width: 768px) {
+  .admin-premium-nav {
+    padding: 12px;
+    gap: 10px;
+  }
+  .admin-nav-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+</style>
+
+<div class="container dashboard-wrapper">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 class="dashboard-title"><i class="fa-solid fa-gauge-high me-2"></i>Admin Dashboard</h2>
+      <p class="dashboard-sub">Welcome, <%= currentUser.username %> — Manage your entire platform here.</p>
+    </div>
+
+    <!-- Updated Button Row: ADDED SUPPORT -->
+    <nav class="admin-premium-nav">
+
+        <a href="/admin/analytics" class="admin-nav-btn btn-analytics">
+          <i class="fa-solid fa-chart-column"></i> Analytics
+        </a>
+
+        <a href="/admin/earnings" class="admin-nav-btn btn-earnings">
+          <i class="fa-solid fa-sack-dollar"></i> Earnings
+        </a>
+
+        <a href="/admin/users" class="admin-nav-btn btn-users">
+          <i class="fa-solid fa-users"></i> Users
+        </a>
+
+        <a href="/admin/listings" class="admin-nav-btn btn-listings">
+          <i class="fa-solid fa-list"></i> Listings
+        </a>
+
+        <a href="/support" class="admin-nav-btn btn-support">
+          <i class="fa-solid fa-headset"></i> Support
+        </a>
+
+        <a href="/admin/owners" class="admin-nav-btn btn-owner">
+          <i class="fa-solid fa-user-check"></i> Owner Approvals
+        </a>
+
+</nav>
+
+  </div>
+
+
+  <!-- Stats Overview -->
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <i class="fa-solid fa-users stat-icon text-primary"></i>
+      <p class="stat-title">Total Users</p>
+      <p class="stat-value"><%= totalUsers %></p>
+    </div>
+
+    <div class="stat-card">
+      <i class="fa-solid fa-building stat-icon text-warning"></i>
+      <p class="stat-title">Total Listings</p>
+      <p class="stat-value"><%= totalListings %></p>
+    </div>
+
+    <div class="stat-card">
+      <i class="fa-solid fa-calendar-check stat-icon text-success"></i>
+      <p class="stat-title">Total Bookings</p>
+      <p class="stat-value"><%= totalBookings %></p>
+    </div>
+
+    <div class="stat-card">
+      <i class="fa-solid fa-indian-rupee-sign stat-icon text-danger"></i>
+      <p class="stat-title">Total Revenue (Paid)</p>
+      <p class="stat-value">₹<%= totalRevenue.toLocaleString('en-IN') %></p>
+    </div>
+
+    <!-- ⭐ NEW SUPPORT CARD -->
+    <div class="stat-card support-card">
+      <i class="fa-solid fa-headset stat-icon text-orange-600"></i>
+      <p class="stat-title">Open Support Tickets</p>
+      <p class="stat-value"><%= openTickets %></p>
+    </div>
+
+  </div>
+
+
+  <!-- Monthly Revenue Chart -->
+  <div class="card-section mt-5">
+    <p class="section-title"><i class="fa-solid fa-chart-line me-2"></i>Monthly Revenue Overview</p>
+    <canvas id="revenueChart" height="120"></canvas>
+  </div>
+
+
+  <!-- Recent Bookings Table -->
+  <div class="card-section mt-4">
+    <h4 class="section-title"><i class="fa-solid fa-clock-rotate-left me-1"></i> Recent Bookings</h4>
+
+    <% if (!recentBookings || recentBookings.length === 0) { %>
+      <p class="text-muted">No bookings yet.</p>
+    <% } else { %>
+      <div class="table-responsive mt-3">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Host</th>
+              <th>Guest</th>
+              <th>Dates</th>
+              <th>Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentBookings.forEach(b => { %>
+              <tr>
+                <td><%= b.listing?.title || 'N/A' %></td>
+                <td>@<%= b.listing?.owner?.username || 'N/A' %></td>
+                <td>@<%= b.user?.username || 'N/A' %></td>
+
+                <td>
+                  <%= new Date(b.startDate).toLocaleDateString("en-IN") %> -
+                  <%= new Date(b.endDate).toLocaleDateString("en-IN") %>
+                </td>
+
+                <td>₹<%= b.totalPrice.toLocaleString("en-IN") %></td>
+
+                <td>
+                  <span class="badge 
+                    <%= b.paymentStatus === 'paid' ? 'bg-paid' :
+                        b.paymentStatus === 'refunded' ? 'bg-refunded' :
+                        'bg-pending' %>">
+                    <%= (b.paymentStatus || 'pending').toUpperCase() %>
+                  </span>
+                </td>
+
+                <td>
+                  <span class="badge 
+                    <%= b.status === 'pending' ? 'bg-pending' :
+                        b.status === 'confirmed' ? 'bg-confirmed' :
+                        b.status === 'canceled' ? 'bg-canceled' :
+                        'bg-completed' %>">
+                    <%= b.status.toUpperCase() %>
+                  </span>
+                </td>
+
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+</div>
+
+<!-- Chart Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+ const months = JSON.parse('<%- JSON.stringify(months) %>');
+ const revenue = JSON.parse('<%- JSON.stringify(monthlyRevenue) %>');
+
+ const ctx = document.getElementById("revenueChart");
+ new Chart(ctx, {
+   type: 'bar',
+   data: {
+     labels: months,
+     datasets: [{
+       label: "Revenue (₹)",
+       data: revenue,
+       borderWidth: 2,
+       backgroundColor: "rgba(79, 70, 229, 0.4)",
+       borderColor: "#4f46e5",
+       borderRadius: 6,
+     }]
+   },
+   options: { scales: { y: { beginAtZero: true } } }
+ });
+</script>

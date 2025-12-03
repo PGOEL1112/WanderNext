@@ -60,18 +60,25 @@ const listingSchema = new Schema({
     },
 
     owner: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
 
     reviews: [
         {
-            type: Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: "Review"
         }
-    ]
-});
+    ],
+    savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
+    amenities: {
+        type: [String],
+        default: []
+    },
+
+},{ timestamps: true });
 
 // Delete related reviews when listing is deleted
 listingSchema.post("findOneAndDelete", async function (listing) {

@@ -1,97 +1,279 @@
 <%- layout("layouts/boilerplate") %>
 
-<div class="container mt-5 mb-5">
-  <div class="mx-auto p-4 p-md-5 shadow-lg bg-white rounded-4" style="max-width: 600px;">
-    <h2 class="mb-4 text-center text-primary fw-bold">✏️ Edit Listing</h2>
+<div class="container mt-4 mb-5">
+  <div class="glass-card shadow-lg p-4 mx-auto">
+    <h2 class="page-title text-center mb-4">
+      <i class="fa-solid fa-pencil"></i> Edit Listing
+    </h2>
 
     <form
-      class="needs-validation"
-      novalidate
       method="POST"
       enctype="multipart/form-data"
       action="/listings/<%= listing._id %>?_method=PUT"
+      class="needs-validation"
+      novalidate
     >
 
       <!-- Title -->
       <div class="mb-3">
-        <label for="title" class="form-label fw-semibold">Title</label>
-        <input type="text" class="form-control" id="title"
-               name="listing[title]" value="<%= listing.title %>" required />
+        <label class="form-label"><i class="fa-solid fa-heading"></i> <strong>Title</strong></label>
+        <input type="text" name="listing[title]" class="custom-input"
+               placeholder="Enter listing title"
+               value="<%= listing.title %>" required>
         <div class="invalid-feedback">Please enter a title.</div>
       </div>
 
       <!-- Description -->
       <div class="mb-3">
-        <label for="description" class="form-label fw-semibold">Description</label>
-        <textarea class="form-control" id="description"
-                  name="listing[description]" rows="3" required><%= listing.description %></textarea>
+        <label class="form-label"><i class="fa-solid fa-align-left"></i> <strong>Description</strong></label>
+        <textarea name="listing[description]" class="custom-input" rows="4"
+                  placeholder="Write a brief description" required><%= listing.description %></textarea>
         <div class="invalid-feedback">Please enter a description.</div>
       </div>
 
-      <!-- Current Image Preview -->
-      <% if (listing.image && listing.image.url) { %>
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Current Image</label>
-          <br>
-          <img src="<%= listing.image.url %>" alt="Listing Image" class="img-fluid rounded" style="max-width: 250px;">
+      <!-- Current Image -->
+      <% if (listing.image?.url) { %>
+      <div class="mb-3">
+        <label class="form-label"><i class="fa-solid fa-image"></i> <strong>Current Image</strong></label>
+        <div class="image-preview mt-1">
+          <img src="<%= listing.image.url %>" style="max-height:140px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
         </div>
+      </div>
       <% } %>
 
-      <!-- New Image Upload -->
+      <!-- Upload New Image -->
       <div class="mb-3">
-        <label for="imageFile" class="form-label fw-semibold">Upload New Image (optional)</label>
-        <input type="file" class="form-control" id="imageFile" name="imageFile">
+        <label class="form-label"><i class="fa-solid fa-upload"></i> <strong>Upload New Image</strong></label>
+        <div class="custom-file-wrapper">
+          <input type="file" id="imageFile" name="imageFile" class="custom-file-input" accept="image/*">
+          <span class="custom-file-button">
+            <i class="fa-solid fa-upload"></i> Choose File
+          </span>
+        </div>
+
+        <div class="image-preview mt-2" style="position:relative; display:inline-block;">
+          <img id="previewImg" src="" style="display:none; max-height:150px; border-radius:12px;">
+          <span id="removeImage" style="display:none; position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:50%; cursor:pointer; color:#fff;">✖</span>
+        </div>
       </div>
 
       <!-- Price -->
       <div class="mb-3">
-        <label for="price" class="form-label fw-semibold">Price</label>
-        <input type="number" class="form-control" id="price"
-               name="listing[price]" value="<%= listing.price %>" required />
-        <div class="invalid-feedback">Please enter a valid price.</div>
+        <label class="form-label"><i class="fa-solid fa-indian-rupee-sign"></i> <strong>Price</strong></label>
+        <input type="number" name="listing[price]" class="custom-input"
+               placeholder="Enter price in INR"
+               value="<%= listing.price %>" required>
       </div>
 
       <!-- Location -->
       <div class="mb-3">
-        <label for="location" class="form-label fw-semibold">Location</label>
-        <input type="text" class="form-control" id="location"
-               name="listing[location]" value="<%= listing.location %>" required />
-        <div class="invalid-feedback">Please enter a location.</div>
+        <label class="form-label"><i class="fa-solid fa-location-dot"></i> <strong>Location</strong></label>
+        <input type="text" name="listing[location]" class="custom-input"
+               placeholder="Enter location"
+               value="<%= listing.location %>" required>
       </div>
 
       <!-- Country -->
-      <div class="mb-4">
-        <label for="country" class="form-label fw-semibold">Country</label>
-        <input type="text" class="form-control" id="country"
-               name="listing[country]" value="<%= listing.country %>" required />
-        <div class="invalid-feedback">Please enter a country.</div>
+      <div class="mb-3">
+        <label class="form-label"><i class="fa-solid fa-flag"></i> <strong>Country</strong></label>
+        <input type="text" name="listing[country]" class="custom-input"
+               placeholder="Enter country"
+               value="<%= listing.country %>" required>
       </div>
 
+      <!-- Category -->
       <div class="mb-3">
-  <label for="category" class="form-label">Category</label>
-  <select id="category" name="listing[category]" class="form-select form-control category-select" required>
-    <option value="">Select category</option>
-    <option value="beach" <%= listing.category==='beach'?'selected':'' %>>Beach</option>
-    <option value="mountain" <%= listing.category==='mountain'?'selected':'' %>>Mountain</option>
-    <option value="villa" <%= listing.category==='villa'?'selected':'' %>>Villa</option>
-    <option value="trending" <%= listing.category==='trending'?'selected':'' %>>Trending</option>
-    <option value="city" <%= listing.category==='city'?'selected':'' %>>City</option>
-    <option value="camping" <%= listing.category==='camping'?'selected':'' %>>Camping</option>
-    <option value="luxury" <%= listing.category==='luxury'?'selected':'' %>>Luxury</option>
-    <option value="historic" <%= listing.category==='historic'?'selected':'' %>>Historic</option>
-    <option value="all" <%= listing.category==='all'?'selected':'' %>>All</option>
-  </select>
-  <div class="invalid-feedback">Please select a category.</div>
-</div>
+        <label class="form-label"><i class="fa-solid fa-list"></i> <strong>Category</strong></label>
+        <select name="listing[category]" class="custom-input" required>
+          <% const cats = ["beach","mountain","villa","trending","city","camping","luxury","historic","all"]; %>
+          <% cats.forEach(c => { %>
+            <option value="<%= c %>" <%= listing.category===c?"selected":"" %>>
+              <%= c.charAt(0).toUpperCase() + c.slice(1) %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
 
+      <!-- Amenities (Replace with Updated Icons) -->
+      <div class="form-group mt-3">
+        <label><i class="fa-solid fa-list-check"></i> <strong>Amenities</strong></label>
+
+        <div class="amenities-container mt-2">
+
+          <% const amenities = [
+            {id:"wifi", icon:"fa-wifi", label:"WiFi"},
+            {id:"parking", icon:"fa-square-parking", label:"Parking"},
+            {id:"pool", icon:"fa-person-swimming", label:"Pool"},
+            {id:"gym", icon:"fa-dumbbell", label:"Gym"},
+            {id:"ac", icon:"fa-snowflake", label:"AC"},
+            {id:"restaurant", icon:"fa-utensils", label:"Dining"}
+          ]; %>
+
+          <% amenities.forEach(a => { %>
+            <label class="amenity-item">
+              <input type="checkbox" name="listing[amenities][]" value="<%= a.id %>"
+                <%= listing.amenities?.includes(a.id) ? "checked":"" %>>
+              <i class="fa-solid <%= a.icon %>"></i> <%= a.label %>
+            </label>
+          <% }) %>
+
+        </div>
+      </div>
 
       <!-- Buttons -->
-      <div class="d-flex justify-content-between">
-        <button type="submit" class="btn btn-primary px-4">Update</button>
-        <a href="/listings/<%= listing._id %>" class="btn btn-outline-secondary px-4">Cancel</a>
-      </div>
+      <div class="d-flex justify-content-between mt-4">
+        <button type="submit" class="btn-gradient px-4">
+          <i class="fa-solid fa-circle-check"></i> Update
+        </button>
 
+        <a href="/listings/<%= listing._id %>" class="btn-gradient-outline px-4">
+          <i class="fa-solid fa-arrow-left"></i> Cancel
+        </a>
+      </div>
 
     </form>
   </div>
 </div>
+
+<!-- SAME PREMIUM CSS AS CREATE PAGE -->
+<style>
+/* ---------- CARD (Glass UI) ---------- */
+.glass-card {
+  backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.3);
+  border-radius: 18px;
+  padding: 30px;
+  border: 1px solid rgba(255,255,255,0.35);
+  max-width: 700px;
+  margin: auto;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+/* ---------- INPUTS ---------- */
+.custom-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: rgba(255,255,255,0.85);
+  font-size: 0.95rem;
+  transition: 0.3s;
+  color: #1f2937;
+}
+
+.custom-input::placeholder {
+  color: #374151 !important;
+}
+
+.custom-input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 8px rgba(52,152,219,0.25);
+  outline: none;
+}
+
+/* ---------- FILE BUTTON ---------- */
+.custom-file-input { display:none; }
+
+.custom-file-button {
+  background: linear-gradient(90deg,#1e3c72,#2a5298);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.custom-file-button:hover {
+  background: linear-gradient(90deg,#2a5298,#1e3c72);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ---------- AMENITIES ---------- */
+.amenities-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.amenity-item {
+  background: rgba(255,255,255,0.8);
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.1);
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.amenity-item:hover {
+  background: #eef4ff;
+  border-color: #4c7df0;
+}
+
+.amenity-item i {
+  color: #2a5298;
+}
+
+/* ---------- BUTTONS ---------- */
+.btn-gradient {
+  background: linear-gradient(90deg,#1e3c72,#2a5298);
+  color:white;
+  border-radius:30px;
+  font-weight:600;
+  transition:0.3s;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow:0 4px 14px rgba(0,0,0,0.25);
+}
+
+.btn-gradient-outline {
+  background: transparent;
+  color:#1e3c72;
+  border:2px solid #1e3c72;
+  border-radius:30px;
+  font-weight:600;
+  transition:0.3s;
+}
+
+.btn-gradient-outline:hover {
+  background:#1e3c72;
+  color:white;
+}
+
+/* Fade Animation */
+@keyframes fadeIn {
+  from {opacity:0; transform:translateY(15px);}
+  to {opacity:1; transform:translateY(0);}
+}
+</style>
+
+<script>
+// Preview uploaded image
+const input = document.getElementById('imageFile');
+const preview = document.getElementById('previewImg');
+const removeBtn = document.getElementById('removeImage');
+
+input.addEventListener('change', function () {
+  if (this.files && this.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      removeBtn.style.display = 'block';
+    };
+    reader.readAsDataURL(this.files[0]);
+  }
+});
+
+removeBtn.onclick = () => {
+  input.value = "";
+  preview.src = "";
+  preview.style.display = "none";
+  removeBtn.style.display = "none";
+};
+</script>

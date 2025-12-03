@@ -9,7 +9,8 @@ const { upload } = require("../middleware/multer");
 
 // Controllers
 const listingController = require("../controllers/listings");
-
+const allowRoles = require('../middleware/roles');
+const Listing = require("../models/listing");
 // =======================
 // 1. NEW FORM
 // Must come BEFORE "/" and "/:id"
@@ -23,6 +24,7 @@ router.route("/")
   .get(wrapAsync(listingController.index))
   .post(
     isLoggedIn,
+    allowRoles(['owner','admin']),           // only owners & admins can create
     upload.single("imageFile"),
     validateListing,
     wrapAsync(listingController.postRoute)
@@ -56,5 +58,27 @@ router.route("/:id")
     isOwner,
     wrapAsync(listingController.deleteRoute)
   );
+  router.post("/:id/save", isLoggedIn, wrapAsync(listingController.saveListing));
+// VIEW ALL USERS WHO SAVED A LISTING (Owner/Admin only)
+router.get(
+  "/:id/saved-users",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const listing = await Listing.findById(req.params.id).populate('savedBy', 'username email role');
+
+    if (!listing) {
+      req.flash('error', 'Listing not found.');
+      return res.redirect('/listings');
+    }
+
+    if (req.user._id.toString() !== listing.owner._id.toString() && req.user.role !== 'admin') {
+      req.flash('error', 'You do not have permission to view this page.');
+      return res.redirect(`/listings/${req.params.id}`);
+    }
+
+    res.render("listings/savedUsers", { listing, currentUser: req.user });
+  })
+);
+
 
 module.exports = router;

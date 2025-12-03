@@ -1,0 +1,32 @@
+<%- layout("layouts/boilerplate") %>
+
+<div class="container mt-5">
+  <h2>My Listings</h2>
+
+  <div class="row mt-4">
+    <% listings.forEach(listing => { %>
+      <div class="col-md-4">
+        <div class="card mb-4 shadow-sm">
+
+          <img src="<%= listing.image.url %>" class="card-img-top">
+
+          <div class="card-body">
+            <h5 class="card-title"><%= listing.title %></h5>
+            <p class="card-text"><%= listing.location %>, <%= listing.country %></p>
+
+            <div class="d-flex justify-content-between">
+              <a href="/owner/<%= listing._id %>/edit" class="btn btn-sm btn-outline-primary">
+                Edit
+              </a>
+
+              <form method="POST" action="/owner/<%= listing._id %>?_method=DELETE">
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>

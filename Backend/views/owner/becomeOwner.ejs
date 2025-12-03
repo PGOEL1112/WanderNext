@@ -1,0 +1,260 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+:root {
+  --primary: #ff5a60;
+  --primary-dark: #e63946;
+  --gradient: linear-gradient(90deg, #ff7a59, #ff385c);
+  --card-bg: rgba(255, 255, 255, 0.82);
+}
+
+/* Outer wrapper */
+.owner-wrapper {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 15px;
+}
+
+/* Main card */
+.owner-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  padding: 32px 28px;
+  border-radius: 22px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.owner-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.owner-subtext {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-top: 4px;
+}
+
+/* Status badge */
+.badge-status {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.76rem;
+}
+.badge-pending { background:#fff3c4; color:#b45309; }
+.badge-approved { background:#d1fadf; color:#15803d; }
+.badge-rejected { background:#ffe0e0; color:#c53030; }
+
+/* Alert redesign */
+.custom-alert {
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+.alert-success { background:#e7fbe9; color:#166534; }
+.alert-warning { background:#fff8db; color:#b45309; }
+.alert-danger { background:#ffe5e5; color:#b91c1c; }
+
+/* Form fields premium style */
+.form-label {
+  font-weight: 700;
+  color:#374151;
+}
+
+.form-control, .form-select, textarea {
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  border: 1px solid #d1d5db !important;
+  transition: all 0.25s ease;
+}
+
+.form-control:focus, .form-select:focus, textarea:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px rgba(255, 88, 99, 0.25) !important;
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: var(--gradient);
+  color: white;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-top: 10px;
+  box-shadow: 0 12px 28px rgba(255, 56, 92, 0.25);
+  transition: 0.25s;
+}
+
+.submit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px rgba(255, 56, 92, 0.35);
+}
+
+.submit-btn:active {
+  transform: scale(0.97);
+}
+
+/* Dashboard button */
+.dashboard-btn {
+  background: #1f2937;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  text-decoration:none;
+}
+.dashboard-btn:hover {
+  background:#111827;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .owner-title { font-size: 1.7rem; }
+}
+</style>
+
+
+<div class="owner-wrapper">
+  <div class="owner-card">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="owner-title">
+          <i class="fa-solid fa-user-tie me-2"></i>
+          Become an Owner / Host
+        </h2>
+        <p class="owner-subtext">
+          Apply to list and manage your properties on <b>WanderNext</b>.
+        </p>
+      </div>
+
+      <% if (existingRequest) { %>
+        <span class="badge-status 
+          <%= existingRequest.status === 'pending' ? 'badge-pending'
+            : existingRequest.status === 'approved' ? 'badge-approved'
+            : 'badge-rejected' %>">
+          <%= existingRequest.status.toUpperCase() %>
+        </span>
+      <% } %>
+    </div>
+
+    <!-- APPROVED -->
+    <% if (existingRequest && existingRequest.status === "approved") { %>
+      <div class="custom-alert alert-success">
+        ✅ Your owner request is approved. You can now add listings and manage bookings.
+      </div>
+
+      <a href="/dashboard/owner" class="dashboard-btn">
+        Go to Owner Dashboard →
+      </a>
+
+    <% } else { %>
+
+      <!-- PENDING -->
+      <% if (existingRequest && existingRequest.status === "pending") { %>
+        <div class="custom-alert alert-warning">
+          ⏳ Your request is <b>pending</b>. Our team will review it soon.
+        </div>
+      <% } %>
+
+      <!-- REJECTED -->
+      <% if (existingRequest && existingRequest.status === "rejected") { %>
+        <div class="custom-alert alert-danger">
+          ❌ Your previous request was rejected. You may apply again.
+        </div>
+      <% } %>
+
+      <!-- FORM -->
+      <form action="/become-owner" method="POST" class="mt-3">
+        <div class="row g-4">
+
+          <div class="col-md-6">
+            <label class="form-label">Full Name *</label>
+            <input type="text" name="fullName" class="form-control"
+              required value="<%= existingRequest?.fullName || currentUser.username %>">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Phone Number *</label>
+            <input type="text" name="phone" class="form-control" required
+              value="<%= existingRequest?.phone || '' %>">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">City *</label>
+            <input type="text" name="city" class="form-control" required
+              value="<%= existingRequest?.city || '' %>">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Full Address *</label>
+            <input type="text" name="address" class="form-control" required
+              value="<%= existingRequest?.address || '' %>">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Govt ID Type</label>
+            <select name="govIdType" class="form-select">
+              <option value="">Select</option>
+              <option value="aadhaar" <%= existingRequest?.govIdType==='aadhaar'?'selected':'' %>>Aadhaar</option>
+              <option value="pan" <%= existingRequest?.govIdType==='pan'?'selected':'' %>>PAN</option>
+              <option value="passport" <%= existingRequest?.govIdType==='passport'?'selected':'' %>>Passport</option>
+              <option value="other" <%= existingRequest?.govIdType==='other'?'selected':'' %>>Other</option>
+            </select>
+          </div>
+
+          <div class="col-md-8">
+            <label class="form-label">Govt ID Number (optional)</label>
+            <input type="text" name="govIdNumber" class="form-control"
+              value="<%= existingRequest?.govIdNumber || '' %>">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Primary Property Type</label>
+            <input type="text" name="propertyType" class="form-control"
+              placeholder="Apartment, Villa, Homestay..."
+              value="<%= existingRequest?.propertyType || '' %>">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Number of Properties</label>
+            <input type="number" name="propertyCount" min="1" class="form-control"
+              value="<%= existingRequest?.propertyCount || 1 %>">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Tell us about your property / hosting plan</label>
+            <textarea name="message" rows="3" class="form-control"
+              placeholder="Any extra details you'd like us to know..."><%= existingRequest?.message || '' %></textarea>
+          </div>
+
+        </div>
+
+        <button class="submit-btn" type="submit">
+          <i class="fa-solid fa-paper-plane me-1"></i> Submit Request
+        </button>
+      </form>
+
+    <% } %>
+
+  </div>
+</div>
