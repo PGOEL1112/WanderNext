@@ -9,226 +9,313 @@
 
 <style>
   :root{
-    --accent:#ffb020;
-    --accent-2:#ff7a59;
-    --muted:#475569;
-    --card-bg:#ffffff;
-    --glass:rgba(255,255,255,0.6);
+  --accent:#ffb020;
+  --accent-soft:#fff4dc;
 
-    --text-dark:#111827;
-    --text-muted:#6b7280;
-    --border-light:#e5e7eb;
-    --bg-light:#f3f4f6;
+  --bg:#f9fafb;
+  --card:#ffffff;
+
+  --text:#111827;
+  --muted:#6b7280;
+
+  --border:#e5e7eb;
+
+  --shadow-sm:0 1px 4px rgba(0,0,0,.05);
+  --shadow-md:0 8px 22px rgba(0,0,0,.08);
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* ================= FILTER BAR ================= */
+.premium-filter{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:var(--shadow-sm);
+}
+
+.form-control,
+.form-select{
+  border-radius:10px;
+  border:1px solid var(--border);
+  font-weight:500;
+  font-size:.9rem;
+}
+
+.input-with-icon{
+  position:relative;
+}
+
+.input-with-icon i{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:.85rem;
+  color:#9ca3af;
+  pointer-events:none;
+}
+
+.input-with-icon input{
+  padding-left:38px !important;
+}
+
+/* ================= CHIPS ================= */
+.amenity-chip,
+.cat-pill{
+  background:#fff;
+  border:1px solid var(--border);
+  color:var(--muted);
+  font-weight:600;
+  border-radius:999px;
+  padding:8px 16px;
+  font-size:.85rem;
+  transition:.15s ease;
+}
+
+.amenity-chip:hover,
+.cat-pill:hover{
+  background:var(--accent-soft);
+  border-color:#fde68a;
+  color:#111;
+}
+
+.amenity-chip.active,
+.cat-pill.active{
+  background:var(--accent-soft);
+  border-color:var(--accent);
+  color:#111;
+}
+
+/* ================= LISTING CARD ================= */
+.listing-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  transition:.25s ease;
+}
+
+.listing-card:hover{
+  box-shadow:var(--shadow-md);
+}
+
+/* image */
+.img-wrap img{
+  height:220px;
+  width:100%;
+  object-fit:cover;
+}
+
+/* content */
+.listing-body{
+  padding:16px;
+}
+
+.listing-title{
+  font-size:1.05rem;
+  font-weight:600;
+}
+.listing-title a{
+  color:var(--text);
+  text-decoration:none;
+}
+
+.meta{
+  font-size:.85rem;
+  color:var(--muted);
+}
+
+/* price */
+.price{
+  color:var(--accent);
+  font-size:1.15rem;
+  font-weight:700;
+}
+
+/* amenities */
+.amenity{
+  font-size:.75rem;
+  background:#f3f4f6;
+  border-radius:999px;
+  padding:5px 10px;
+  color:var(--muted);
+}
+/* ===== +MORE AMENITY BADGE ===== */
+.amenity.more{
+  background:#fef3c7;               /* soft accent */
+  border:1px solid #fde68a;
+  color:#92400e;
+  font-weight:600;
+}
+
+
+/* ================= BUTTONS ================= */
+.btn-primary-sm{
+  background:#fff;
+  border:1px solid var(--border);
+  color:var(--text);
+  border-radius:10px;
+  font-weight:600;
+  padding:10px;
+}
+
+.btn-primary-sm:hover{
+  background:#f9fafb;
+}
+
+.btn-cta-sm{
+  background:var(--accent);
+  color:#111;
+  border-radius:10px;
+  font-weight:700;
+  padding:10px;
+}
+
+.btn-cta-sm:hover{
+  opacity:.9;
+}
+
+/* save */
+.save-btn{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:50%;
+  padding:8px;
+}
+.save-btn.saved{
+  color:#ef4444;
+  border-color:#fecaca;
+}
+
+/* badge */
+.top-pick{
+  background:#fff;
+  border:1px solid var(--border);
+  font-size:.75rem;
+  font-weight:600;
+  padding:6px 10px;
+  border-radius:10px;
+  box-shadow:var(--shadow-sm);
+}
+
+/* ===== GST BADGE ===== */
+.price-sub{
+  display:flex;
+  align-items:center;
+  gap:6px;
+
+  font-size:.75rem;
+  color:var(--muted);
+}
+
+/* GST badge */
+.gst-badge{
+  font-size:.7rem;
+  font-weight:700;
+  padding:3px 8px;
+  border-radius:999px;
+
+  background:#fff7ed;
+  color:#92400e;
+  border:1px solid #fed7aa;
+
+  text-transform:uppercase;
+  letter-spacing:.3px;
+}
+
+
+
+/* ================= PAGINATION ================= */
+.pagination .page-link{
+  border-radius:8px;
+  border:1px solid var(--border);
+  color:var(--text);
+}
+.pagination .active .page-link{
+  background:var(--accent);
+  border:none;
+}
+
+.btn-apply{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+
+  padding:10px 16px;
+  border-radius:10px;
+
+  background:#ffb020;
+  color:#111;
+
+  font-size:.9rem;
+  font-weight:700;
+
+  border:none;
+  cursor:pointer;
+
+  box-shadow:0 4px 12px rgba(255,176,32,.35);
+  transition:.2s ease;
+}
+
+/* hover */
+.btn-apply:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(255,176,32,.45);
+  opacity:.95;
+}
+
+/* active click */
+.btn-apply:active{
+  transform:translateY(0);
+  box-shadow:0 4px 10px rgba(255,176,32,.35);
+}
+
+/* focus (accessibility) */
+.btn-apply:focus-visible{
+  outline:none;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px rgba(255,176,32,.6);
+}
+
+/* mobile */
+@media (max-width:480px){
+  .btn-apply{
+    padding:9px 14px;
+    font-size:.85rem;
+  }
+}
+
+
+/* ================= RESPONSIVE ================= */
+@media (max-width:768px){
+  .img-wrap img{
+    height:180px;
   }
 
-  body{
-    background:var(--bg-light);
+  .listing-body{
+    padding:14px;
   }
+}
 
-  /* ---------------- FILTER BAR (Premium Glass) ---------------- */
+@media (max-width:480px){
   .premium-filter{
-    background:rgba(255,255,255,0.7);
-    border:1px solid var(--border-light);
-    padding:16px;
-    border-radius:14px;
-    box-shadow:0 10px 26px rgba(0,0,0,0.06);
-    backdrop-filter:blur(12px);
+    padding:14px;
   }
 
-  .input-with-icon{
-    position:relative;
-  }
-  .input-with-icon i{
-    position:absolute;
-    left:12px;
-    top:50%;
-    transform:translateY(-50%);
-    color:#444;
-    font-size:14px;
-    z-index:5;
-  }
-  .input-with-icon input{
-    padding-left:38px !important;
-    background:#ffffff;
-    border:1px solid var(--border-light);
-    color:var(--text-dark);
-    font-weight:600;
-  }
-  .input-with-icon input::placeholder{
-    color:#222 !important;
-    font-weight:600;
-  }
-
-  .form-control,
-  .form-select{
-    background:#ffffff;
-    border:1px solid var(--border-light);
-    color:var(--text-dark);
-    font-weight:600;
-  }
-  .form-control::placeholder{
-    color:#222 !important;
-    font-weight:600;
-  }
-
-  /* GST toggle */
-  #gstToggle{
-    transform:scale(1.1);
-  }
-
-  /* Amenity Chips */
-  .amenity-chip{
-    padding:8px 14px;
-    border-radius:999px;
-    color:var(--text-dark);
-    border:1px solid var(--border-light);
-    background:#fff;
-    transition:.25s;
-    font-weight:600;
-  }
-  .amenity-chip.active{
-    background:linear-gradient(90deg,var(--accent),var(--accent-2));
-    border:none;
-    color:#111;
-    box-shadow:0 10px 30px rgba(255,176,32,0.2);
-  }
-
-  /* Category Pills */
+  .amenity-chip,
   .cat-pill{
-    padding:8px 14px;
-    background:#fff;
-    border:1px solid var(--border-light);
-    border-radius:999px;
-    color:var(--text-muted);
-    font-weight:700;
-    transition:.25s;
+    padding:6px 12px;
+    font-size:.8rem;
   }
-  .cat-pill.active{
-    background:linear-gradient(90deg,#ffe6b3,#ffd3c2);
-    border-color:#ffb020;
-    color:#111;
-    box-shadow:0 8px 22px rgba(255,176,32,0.18);
-  }
-  .cat-pill:hover{
-    transform:translateY(-4px);
-  }
+}
 
-  /* ---------------- LISTING CARDS ---------------- */
-  .listing-card{
-    background:#ffffff;
-    border:1px solid var(--border-light);
-    border-radius:14px;
-    overflow:hidden;
-    box-shadow:0 12px 32px rgba(0,0,0,0.08);
-    transition:.25s;
-  }
-  .listing-card:hover{
-    transform:translateY(-8px);
-    box-shadow:0 20px 50px rgba(0,0,0,0.12);
-  }
-
-  .listing-title{
-    color:var(--text-dark);
-    font-weight:600 !important;   /* LIGHTER AS YOU REQUESTED */
-  }
-  .listing-title a{
-    text-decoration:none;
-    color:var(--text-dark);
-  }
-
-  .meta{
-    color:var(--text-muted);
-  }
-
-  .price{
-    color:var(--accent);
-    font-weight:900;
-  }
-
-  /* Amenity badge */
-  .amenity{
-    background:#f9fafb;
-    border:1px solid var(--border-light);
-    border-radius:999px;
-    padding:6px 10px;
-    font-size:0.82rem;
-    color:var(--text-muted);
-  }
-
-  .amenity.more{
-    background:linear-gradient(90deg,var(--accent),var(--accent-2));
-    color:#111 !important;               /* FIXED COLOR */
-    border:none;
-    font-weight:800;
-    box-shadow:0 8px 16px rgba(255,176,32,.15);
-  }
-
-  /* ---------------- BUTTONS (View + Book) ---------------- */
-
-  /* VIEW */
-  .btn-primary-sm{
-    background:#fff;
-    border:1px solid var(--border-light);
-    color:var(--text-dark);
-    padding:10px 14px;
-    border-radius:10px;
-    font-weight:700;
-    transition:.2s;
-  }
-  .btn-primary-sm:hover{
-    background:#f7f7f7;
-    transform:translateY(-3px);
-    box-shadow:0 6px 14px rgba(0,0,0,0.1);
-  }
-
-  /* BOOK */
-  .btn-cta-sm{
-    background:linear-gradient(90deg,var(--accent),var(--accent-2));
-    color:#111;
-    padding:10px 14px;
-    border-radius:10px;
-    border:none;
-    font-weight:800;
-    transition:.2s;
-  }
-  .btn-cta-sm:hover{
-    transform:translateY(-3px);
-    box-shadow:0 10px 22px rgba(255,176,32,.25);
-  }
-
-  /* Save button */
-  .save-btn{
-    background:#fff;
-    border:1px solid var(--border-light);
-    border-radius:50%;
-    color:var(--text-dark);
-    padding:8px;
-  }
-  .save-btn.saved{
-    color:#ff4d4d;
-    border-color:#ffb3b3;
-  }
-
-  .top-pick{
-    background:linear-gradient(90deg,var(--accent),var(--accent-2));
-    padding:6px 10px;
-    border-radius:10px;
-    color:#111;
-    box-shadow:0 10px 24px rgba(255,176,32,.18);
-    font-weight:700;
-  }
-
-  /* Pagination */
-  .pagination .page-link{
-    color:#111;
-    border-radius:8px;
-    border:1px solid var(--border-light);
-  }
-  .pagination .active .page-link{
-    background:var(--accent);
-    border:none;
-    color:#111;
-  }
 
 </style>
 
@@ -298,10 +385,10 @@
         <% }) %>
       </div>
 
-      <button class="btn btn-apply"
-         style="background:linear-gradient(90deg,var(--accent),var(--accent-2)); border:none; color:#111; border-radius:10px; padding:10px 14px; font-weight:800;">
+      <button class="btn-apply">
         <i class="fa-solid fa-filter me-2"></i> Apply
       </button>
+
 
       <a href="/listings" class="btn btn-reset"
          style="background:#fff; border:1px solid var(--border-light); color:#111; border-radius:10px; padding:10px 14px;">
@@ -377,8 +464,16 @@
             <p class="meta"><i class="fa-solid fa-location-dot me-1"></i> <%= listing.location %>, <%= listing.country %></p>
 
             <div class="price-row d-flex align-items-baseline gap-2">
-              <div class="price">₹<%= gst ? Math.round(listing.price*1.18).toLocaleString("en-IN") : Number(listing.price).toLocaleString("en-IN") %></div>
-              <div class="price-sub" style="color:var(--muted);">/ night <%= gst?'(GST incl)':'' %></div>
+              <div class="price">
+                ₹<%= gst ? Math.round(listing.price*1.18).toLocaleString("en-IN") : Number(listing.price).toLocaleString("en-IN") %>
+              </div>
+
+              <div class="price-sub">
+                / night
+                <% if(gst){ %>
+                  <span class="gst-badge">GST incl</span>
+                <% } %>
+              </div>
             </div>
 
             <% if(listing.amenities?.length){ %>
@@ -407,7 +502,7 @@
                 </a>
               <% } else { %>
                 <a href="/login" class="btn-cta-sm w-50 text-center">
-                  <i class="fa-solid fa-right-to-bracket me-1"></i> Login
+                  <i class="fa-solid fa-right-to-bracket me-1"></i> Book
                 </a>
               <% } %>
 
