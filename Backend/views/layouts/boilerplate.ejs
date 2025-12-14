@@ -15,6 +15,33 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
   <style>
+   html, body{
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;   /* ONLY body scroll */
+}
+
+main.site-main{
+  overflow-y: visible;
+  height: auto !important;
+}
+
+body{
+  position: relative;
+  width: 100%;
+}
+
+
+.row{
+  margin-left:0 !important;
+  margin-right:0 !important;
+}
+*{
+  box-sizing:border-box;
+    overscroll-behavior: contain;
+}
+
   /* ========================
      THEME VARIABLES & BASE
      ======================== */
@@ -61,20 +88,7 @@
   /* =====================
      NAVBAR (DARK) - LAYOUT
      ===================== */
-  header.topbar{
-    position:sticky;
-    top:0;
-    z-index:1200;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:10px 20px;
-    background: linear-gradient(180deg, rgba(18,19,25,0.98), rgba(18,19,25,0.95));
-    color:var(--panel-text);
-    border-bottom:1px solid rgba(255,255,255,0.04);
-    backdrop-filter: blur(8px) saturate(120%);
-  }
-
+  
   .brand { display:flex; align-items:center; gap:12px; }
   .logo-mark{
     width:44px; height:44px; border-radius:10px;
@@ -89,10 +103,6 @@
   /* =====================
      CENTERED SEARCH (PRIMARY)
      ===================== */
-  .search-wrap{
-    flex:1; display:flex; justify-content:center; padding:0 14px;
-  }
-
   /* main centered search: long pill */
   .search-box {
     display:flex; align-items:center; gap:8px;
@@ -140,7 +150,23 @@
   /* =====================
      RIGHT ACTIONS (NOTIF, LINKS, USER)
      ===================== */
-  .actions{ display:flex; align-items:center; gap:10px; margin-left:auto; }
+ .actions{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  overflow-x:auto;
+  overflow-y:visible;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+
+.actions::-webkit-scrollbar{
+  display:none;
+}
+
+.actions > *{
+  flex:0 0 auto;
+}
 
   .hamburger-btn{
     display:none; border:none; background:transparent; color:var(--panel-text);
@@ -288,11 +314,6 @@
   /* =====================
      RESPONSIVE RULES
      ===================== */
-  @media (max-width: 992px){
-    .search-wrap{ display:none; } /* use offcanvas search */
-    .hamburger-btn{ display:inline-flex; }
-    .brand .tag{ display:none; }
-  }
 
   @media (max-width: 720px){
     .footer-inner{ flex-direction:column; align-items:flex-start; }
@@ -312,34 +333,213 @@
     background: radial-gradient(ellipse at center, rgba(108,99,255,0.06), transparent 30%);
     z-index:-1; filter: blur(10px); opacity:.9;
   }
+  
+  @media (max-width: 576px){
+  .notifications-menu{
+    min-width:94vw !important;
+    max-width:94vw !important;
+    left:50% !important;
+    right:auto !important;
+    transform:translateX(-50%) !important;
+  }
+
+  .notification-message{
+    font-size:14px;
+    line-height:1.4;
+  }
+}
+
+
+@media (max-width: 768px){
+  .footer-inner{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:18px;
+  }
+
+  .footer-cols{
+    width:100%;
+    flex-direction:column;
+  }
+
+  .footer-col{
+    width:100%;
+  }
+
+  .footer-bottom{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+  }
+}
+
+.offcanvas{
+  z-index:2000;
+}
+.offcanvas-backdrop{
+  z-index:1999;
+}
+
+/* ================= HEADER LAYOUT ================= */
+
+/* ===== FINAL HEADER LAYOUT (GRID ONLY) ===== */
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:1200;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:12px;
+  padding:10px 16px;
+  background: linear-gradient(180deg, rgba(18,19,25,0.98), rgba(18,19,25,0.95));
+  color:var(--panel-text);
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+
+header.topbar{
+  overflow: visible !important;
+}
+
+.header-left{ display:flex; align-items:center; }
+.header-center{ display:flex; justify-content:center; }
+.header-right{
+  display:block;
+  overflow-y:hidden;
+  white-space:nowrap;
+  position:relative;
+}
+
+/* scrollbar hide */
+
+
+.header-center .search-box{
+  width:100%;
+  max-width:720px;
+}
+
+/* ===== TABLET ===== */
+@media (max-width: 992px){
+  .topbar{
+    grid-template-columns:auto auto;
+  }
+
+  .header-center{
+    grid-column:1 / -1;
+    margin-top:8px;
+  }
+
+  .hamburger-btn{
+    display:inline-flex;
+  }
+
+  .brand .tag{
+    display:none;
+  }
+
+  .search-box{
+    max-width:100%;
+  }
+
+  .actions{
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none; /* Firefox */
+  }
+
+  .actions::-webkit-scrollbar{
+    display:none; /* Chrome / Safari */
+  }
+
+  .header-right{
+    max-width:100%;
+  }
+
+  .header-right::after{
+    content:'⇢';
+    position:absolute;
+    right:4px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--panel-muted);
+    opacity:.6;
+    pointer-events:none;
+  }
+}
+
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px){
+  .topbar{
+    grid-template-columns:1fr auto;
+  }
+
+  .header-center{
+    grid-column:1 / -1;
+  }
+
+  .user-pill{
+    padding:6px;
+    gap:0;
+    min-height:44px;
+  }
+
+  .user-pill .meta{
+    display:none;
+  }
+
+  .user-pill .avatar{
+    width:38px;
+    height:38px;
+    font-size:16px;
+  }
+}
+
+/* ===== USER DROPDOWN MOBILE FIX ===== */
+@media (max-width: 576px){
+  .dropdown-menu{
+    position: fixed !important;
+    top: 72px !important;   /* header ke neeche */
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    min-width: 92vw !important;
+    max-width: 92vw !important;
+  }
+}
+
+
   </style>
 </head>
 <body>
 
   <!-- NAVBAR -->
-  <header class="topbar d-flex align-items-center">
-    <div class="d-flex align-items-center gap-3">
-      <a href="/listings" class="brand" aria-label="WanderNext">
+  <header class="topbar">
+   <div class="header-left">
+      <a href="/listings" class="brand">
         <div class="logo-mark"><i class="fa-solid fa-compass"></i></div>
-        <div>
+        <div class="brand-text">
           <div class="title">WanderNext</div>
           <div class="tag">discover your next stay</div>
         </div>
       </a>
-    </div>
+  </div>
 
     <!-- centered search -->
-    <div class="search-wrap" role="search">
-      <form id="globalSearchForm" action="/listings" method="GET" class="search-box" aria-label="Global search">
-        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-        <!-- dynamic search value preserved -->
-        <input name="search" id="globalSearch" type="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="🔍 Search stays, places…" autocomplete="off" />
-        <button type="submit" title="Search" aria-label="Search">Search</button>
-      </form>
-    </div>
+     <div class="header-center">
+        <form id="globalSearchForm" action="/listings" method="GET" class="search-box" aria-label="Global search">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <!-- dynamic search value preserved -->
+          <input name="search" id="globalSearch" type="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="🔍 Search stays, places…" autocomplete="off" />
+          <button type="submit" title="Search" aria-label="Search">Search</button>
+        </form>
+      </div>
 
     <!-- right actions -->
-    <div class="actions ms-auto d-flex align-items-center gap-2">
+     <div class="header-right">
+    <div class="actions d-flex align-items-center gap-2">
 
       <!-- Mobile hamburger (visible on small screens) -->
       <button class="hamburger-btn d-inline d-lg-none me-1" id="hamburgerToggle" aria-label="Open menu">
@@ -418,6 +618,7 @@
           </ul>
         </div>
       <% } %>
+    </div>
     </div>
   </header>
 
@@ -570,10 +771,17 @@
 
   <script>
   // Mobile offcanvas toggle
-  document.getElementById('hamburgerToggle')?.addEventListener('click', function () {
-    const offcanvas = new bootstrap.Offcanvas(document.getElementById('mobileOffcanvas'));
-    offcanvas.toggle();
+  const hamburger = document.getElementById('hamburgerToggle');
+const offcanvasEl = document.getElementById('mobileOffcanvas');
+
+if (hamburger && offcanvasEl) {
+  const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+
+  hamburger.addEventListener('click', () => {
+    bsOffcanvas.show();
   });
+}
+
 
   // Socket / Notifications + real-time join
   (function () {
@@ -665,6 +873,18 @@
   document.getElementById('globalSearchForm')?.addEventListener('submit', function () {
     // will submit to /listings with ?search=...
   });
+
+ document.addEventListener('hidden.bs.modal', () => {
+  document.body.classList.remove('modal-open');
+  document.body.style.overflow = 'auto';
+  document.body.style.paddingRight = '';
+});
+
+document.addEventListener('hidden.bs.offcanvas', () => {
+  document.body.classList.remove('modal-open');
+  document.body.style.overflow = 'auto';
+  document.body.style.paddingRight = '';
+});
 
   // small accessibility: close dropdown if clicked outside (extra safety)
   document.addEventListener('click', function(e){

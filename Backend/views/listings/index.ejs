@@ -8,7 +8,10 @@
 %>
 
 <style>
-  :root{
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root{
   --accent:#ffb020;
   --accent-soft:#fff4dc;
 
@@ -29,15 +32,20 @@ body{
   color:var(--text);
 }
 
-/* ================= FILTER BAR ================= */
+/* =========================================================
+   FILTER BAR
+   ========================================================= */
 .premium-filter{
   background:#fff;
   border:1px solid var(--border);
   border-radius:14px;
   padding:16px;
   box-shadow:var(--shadow-sm);
+  position:relative; 
+  overflow:visible;
 }
 
+/* inputs */
 .form-control,
 .form-select{
   border-radius:10px;
@@ -46,10 +54,10 @@ body{
   font-size:.9rem;
 }
 
+/* search input with icon */
 .input-with-icon{
   position:relative;
 }
-
 .input-with-icon i{
   position:absolute;
   left:12px;
@@ -59,12 +67,13 @@ body{
   color:#9ca3af;
   pointer-events:none;
 }
-
 .input-with-icon input{
   padding-left:38px !important;
 }
 
-/* ================= CHIPS ================= */
+/* =========================================================
+   AMENITY + CATEGORY CHIPS
+   ========================================================= */
 .amenity-chip,
 .cat-pill{
   background:#fff;
@@ -75,6 +84,9 @@ body{
   padding:8px 16px;
   font-size:.85rem;
   transition:.15s ease;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
 }
 
 .amenity-chip:hover,
@@ -91,7 +103,9 @@ body{
   color:#111;
 }
 
-/* ================= LISTING CARD ================= */
+/* =========================================================
+   LISTING CARD
+   ========================================================= */
 .listing-card{
   background:var(--card);
   border:1px solid var(--border);
@@ -100,19 +114,18 @@ body{
   box-shadow:var(--shadow-sm);
   transition:.25s ease;
 }
-
 .listing-card:hover{
   box-shadow:var(--shadow-md);
 }
 
 /* image */
 .img-wrap img{
-  height:220px;
   width:100%;
+  height:220px;
   object-fit:cover;
 }
 
-/* content */
+/* body */
 .listing-body{
   padding:16px;
 }
@@ -131,14 +144,37 @@ body{
   color:var(--muted);
 }
 
-/* price */
+/* =========================================================
+   PRICE + GST
+   ========================================================= */
 .price{
   color:var(--accent);
   font-size:1.15rem;
   font-weight:700;
 }
 
-/* amenities */
+.price-sub{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:.75rem;
+  color:var(--muted);
+}
+
+.gst-badge{
+  font-size:.7rem;
+  font-weight:700;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#fff7ed;
+  color:#92400e;
+  border:1px solid #fed7aa;
+  text-transform:uppercase;
+}
+
+/* =========================================================
+   AMENITIES BADGES
+   ========================================================= */
 .amenity{
   font-size:.75rem;
   background:#f3f4f6;
@@ -146,16 +182,17 @@ body{
   padding:5px 10px;
   color:var(--muted);
 }
-/* ===== +MORE AMENITY BADGE ===== */
+
 .amenity.more{
-  background:#fef3c7;               /* soft accent */
+  background:#fef3c7;
   border:1px solid #fde68a;
   color:#92400e;
   font-weight:600;
 }
 
-
-/* ================= BUTTONS ================= */
+/* =========================================================
+   BUTTONS
+   ========================================================= */
 .btn-primary-sm{
   background:#fff;
   border:1px solid var(--border);
@@ -163,8 +200,8 @@ body{
   border-radius:10px;
   font-weight:600;
   padding:10px;
+  text-align:center;
 }
-
 .btn-primary-sm:hover{
   background:#f9fafb;
 }
@@ -175,8 +212,8 @@ body{
   border-radius:10px;
   font-weight:700;
   padding:10px;
+  text-align:center;
 }
-
 .btn-cta-sm:hover{
   opacity:.9;
 }
@@ -193,7 +230,7 @@ body{
   border-color:#fecaca;
 }
 
-/* badge */
+/* top pick */
 .top-pick{
   background:#fff;
   border:1px solid var(--border);
@@ -204,34 +241,35 @@ body{
   box-shadow:var(--shadow-sm);
 }
 
-/* ===== GST BADGE ===== */
-.price-sub{
-  display:flex;
+/* =========================================================
+   APPLY BUTTON
+   ========================================================= */
+.btn-apply{
+  display:inline-flex;
   align-items:center;
   gap:6px;
-
-  font-size:.75rem;
-  color:var(--muted);
-}
-
-/* GST badge */
-.gst-badge{
-  font-size:.7rem;
+  padding:10px 16px;
+  border-radius:10px;
+  background:#ffb020;
+  color:#111;
+  font-size:.9rem;
   font-weight:700;
-  padding:3px 8px;
-  border-radius:999px;
-
-  background:#fff7ed;
-  color:#92400e;
-  border:1px solid #fed7aa;
-
-  text-transform:uppercase;
-  letter-spacing:.3px;
+  border:none;
+  cursor:pointer;
+  box-shadow:0 4px 12px rgba(255,176,32,.35);
+  transition:.2s ease;
+}
+.btn-apply:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(255,176,32,.45);
+}
+.btn-apply:active{
+  transform:translateY(0);
 }
 
-
-
-/* ================= PAGINATION ================= */
+/* =========================================================
+   PAGINATION
+   ========================================================= */
 .pagination .page-link{
   border-radius:8px;
   border:1px solid var(--border);
@@ -242,81 +280,129 @@ body{
   border:none;
 }
 
-.btn-apply{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
+/* =========================================================
+   RESPONSIVE — TABLET & MOBILE
+   ========================================================= */
 
-  padding:10px 16px;
-  border-radius:10px;
+/* FILTER STACK */
+@media (max-width:768px){
+  #filterForm{
+    flex-direction:column;
+    gap:14px;
+  }
 
-  background:#ffb020;
-  color:#111;
+  .filter-left,
+  .filter-right{
+    width:100% !important;
+    min-width:100% !important;
+  }
 
-  font-size:.9rem;
-  font-weight:700;
+  .filter-right{
+    justify-content:flex-start;
+  }
 
-  border:none;
-  cursor:pointer;
+  .filter-right select,
+  .gst-toggle{
+    width:100%;
+  }
 
-  box-shadow:0 4px 12px rgba(255,176,32,.35);
-  transition:.2s ease;
+  /* amenities horizontal scroll */
+  /* === AMENITIES SCROLL FIX === */
+.amenities-control{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+
+  width:100%;
+  max-width:100%;
+
+  overflow:visible;   /* allow page scroll */
 }
 
-/* hover */
-.btn-apply:hover{
-  transform:translateY(-2px);
-  box-shadow:0 8px 20px rgba(255,176,32,.45);
-  opacity:.95;
-}
 
-/* active click */
-.btn-apply:active{
-  transform:translateY(0);
-  box-shadow:0 4px 10px rgba(255,176,32,.35);
-}
-
-/* focus (accessibility) */
-.btn-apply:focus-visible{
-  outline:none;
-  box-shadow:
-    0 0 0 2px #fff,
-    0 0 0 4px rgba(255,176,32,.6);
-}
-
-/* mobile */
-@media (max-width:480px){
-  .btn-apply{
-    padding:9px 14px;
-    font-size:.85rem;
+  .amenity-chip{
+    flex-shrink:0;
+    white-space:nowrap;
   }
 }
 
+/* CATEGORY PILLS */
+.category-filter{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
 
-/* ================= RESPONSIVE ================= */
+@media (max-width:768px){
+  .amenities-control{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    padding-bottom:6px;
+  }
+
+  .amenity-chip{
+    flex-shrink:0;
+  }
+}
+
+@media (max-width:768px){
+  .category-filter{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    padding-bottom:8px;
+  }
+  .cat-pill{
+    flex-shrink:0;
+    white-space:nowrap;
+  }
+}
+
+/* LISTING CARD MOBILE */
 @media (max-width:768px){
   .img-wrap img{
-    height:180px;
+    height:170px;
   }
 
-  .listing-body{
-    padding:14px;
+  .listing-title{
+    font-size:1rem;
+  }
+
+  .listing-actions{
+    flex-direction:column;
+  }
+
+  .listing-actions a{
+    width:100% !important;
+  }
+
+  .title-row{
+    gap:10px;
   }
 }
 
+/* SMALL PHONES */
 @media (max-width:480px){
-  .premium-filter{
-    padding:14px;
+  .listing-body{
+    padding:12px;
   }
 
-  .amenity-chip,
-  .cat-pill{
-    padding:6px 12px;
-    font-size:.8rem;
+  .amenity{
+    font-size:.7rem;
+    padding:4px 8px;
+  }
+
+  .price-row{
+    flex-direction:column;
+    align-items:flex-start !important;
+    gap:4px;
+  }
+
+  .btn-primary-sm,
+  .btn-cta-sm{
+    padding:12px;
+    font-size:.9rem;
   }
 }
-
-
 </style>
 
 <div class="listings-page container" style="max-width:1180px; margin: 18px auto;">
