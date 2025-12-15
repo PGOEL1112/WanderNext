@@ -8,17 +8,21 @@ let transporter;
 async function getTransporter() {
   if (transporter) return transporter;
 
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT), // 587
-    secure: false, // MUST be false for 587
+   transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,              // smtp-relay.brevo.com
+    port: Number(process.env.SMTP_PORT),      // 587
+    secure: false,                            // MUST false for 587
+    requireTLS: true,                         // 🔥 IMPORTANT
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     },
-    connectionTimeout: 60_000,
-    greetingTimeout: 30_000,
-    socketTimeout: 60_000
+    tls: {
+      rejectUnauthorized: false               // 🔥 RENDER FIX
+    },
+    connectionTimeout: 120000,
+    greetingTimeout: 60000,
+    socketTimeout: 120000
   });
 
   await transporter.verify();
@@ -26,6 +30,7 @@ async function getTransporter() {
 
   return transporter;
 }
+
 
 /* --------------------------------------------------
    SEND MAIL

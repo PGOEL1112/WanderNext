@@ -21,6 +21,7 @@ const { Server } = require("socket.io");
 
 // Express + Socket Server
 const app = express();
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 const io = new Server(server);
 
@@ -107,7 +108,6 @@ app.use(
 );
 
 app.use(flash());
-
 // ============================================
 // PASSPORT AUTH
 // ============================================
@@ -178,28 +178,6 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/", resetPasswordRoutes);
  // path adjust karo
 
-app.get("/debug-email", async (req, res) => {
-  try {
-    const r = await sendMail({
-      to: "your@email.com",   // apna email
-      subject: "SMTP DEBUG",
-      html: "<h2>SMTP is working</h2>"
-    });
-    res.json(r);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-app.get("/test-email", async (req, res) => {
-  const result = await sendMail({
-    to: "YOUR_PERSONAL_EMAIL@gmail.com",
-    subject: "Brevo SMTP Test",
-    html: "<h1>Email Working 🎉</h1>"
-  });
-
-  res.json(result);
-});
 
 // Attach Socket instance globally
 app.locals.io = io;
