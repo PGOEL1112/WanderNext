@@ -702,16 +702,7 @@ header.topbar{
       <!-- Home link (large screens) -->
       <a href="/" class="btn btn-ghost d-none d-lg-inline with-icon"><i class="fa-solid fa-house icon-left"></i>Home</a>
 
-      <% if (!currentUser) { %>
-        <a href="/login" class="btn btn-accent with-icon"><i class="fa-solid fa-right-to-bracket icon-left"></i>Login</a>
-        <a href="/register" class="btn btn-ghost with-icon"><i class="fa-solid fa-user-plus icon-left"></i>Register</a>
-      <% } else { %>
-        <a href="/listings" class="btn btn-ghost d-none d-lg-inline with-icon"><i class="fa-solid fa-map-marker-alt icon-left"></i>Listings</a>
-
-        <% if (currentUser.role === 'user') { %>
-          <a href="/become-owner" class="btn btn-ghost d-none d-lg-inline with-icon"><i class="fa-solid fa-store icon-left"></i>Become Owner</a>
-          <a href="/saved" class="btn btn-ghost d-none d-lg-inline with-icon"><i class="fa-solid fa-heart icon-left"></i>Wishlist</a>
-        <% } %>
+      <% if (!currentUser) { %> <a href="/login" class="btn btn-accent with-icon"><i class="fa-solid fa-right-to-bracket icon-left"></i>Login</a> <a href="/register" class="btn btn-ghost with-icon"><i class="fa-solid fa-user-plus icon-left"></i>Register</a> <% } else { %> <a href="/listings" class="btn btn-ghost d-none d-lg-inline with-icon"><i class="fa-solid fa-map-marker-alt icon-left"></i>Listings</a> <% if (currentUser.role === 'user') { %> <a href="/become-owner" class="btn btn-ghost d-none d-lg-inline with-icon"><i class="fa-solid fa-store icon-left"></i>Become Owner</a> <a href="/saved" class="btn btn-ghost d-none d-lg-inline with-icon"><i class="fa-solid fa-heart icon-left"></i>Wishlist</a> <% } %>
 
         <!-- user dropdown -->
         <div class="dropdown">
@@ -727,31 +718,17 @@ header.topbar{
   
   <% if (currentUser.role === 'admin') { %>
     <li>
-      <a class="dropdown-item" href="/admin/dashboard">
+      <a class="dropdown-item" href="/admin">
         <i class="fa-solid fa-shield-halved"></i> Admin Dashboard
       </a>
     </li>
-  <% } else { %>
-    <li>
-      <a class="dropdown-item" href="/dashboard/<%= currentUser.role %>">
-        <i class="fa-solid fa-chart-line"></i> Dashboard
-      </a>
-    </li>
-  <% } %>
-
+<% } else if (currentUser.role === 'owner') { %> <li> <a class="dropdown-item" href="/dashboard/owner"> <i class="fa-solid fa-chart-line me-2"></i> Owner Dashboard </a> </li> <% } else { %> <li> <a class="dropdown-item" href="/dashboard/user"> <i class="fa-solid fa-chart-line me-2"></i> Dashboard </a> </li> <% } %>
   <li>
     <a class="dropdown-item" href="/profile">
       <i class="fa-solid fa-user"></i> Profile
     </a>
   </li>
 
-  <% if (currentUser.role === 'user') { %>
-    <li>
-      <a class="dropdown-item" href="/saved">
-        <i class="fa-solid fa-heart"></i> Wishlist
-      </a>
-    </li>
-  <% } %>
 
   <li><hr class="dropdown-divider"></li>
 
@@ -800,10 +777,8 @@ header.topbar{
         <% } else { %>
 
           <% if (currentUser.role === 'admin') { %>
-            <a href="/admin/dashboard" class="list-group-item list-group-item-action bg-transparent text-light"><i class="fa-solid fa-shield-halved me-2"></i>Admin Dashboard</a>
-          <% } %>
-
-          <a href="/dashboard/<%= currentUser.role %>" class="list-group-item list-group-item-action bg-transparent text-light"><i class="fa-solid fa-chart-line me-2"></i>Dashboard</a>
+            <a href="/admin" class="list-group-item list-group-item-action bg-transparent text-light"><i class="fa-solid fa-shield-halved me-2"></i>Admin Dashboard</a>
+          <% } else if (currentUser.role === 'owner') { %> <a href="/dashboard/owner" class="list-group-item bg-transparent text-light"> <i class="fa-solid fa-chart-line me-2"></i> Owner Dashboard </a> <% } else { %> <a href="/dashboard/user" class="list-group-item bg-transparent text-light"> <i class="fa-solid fa-chart-line me-2"></i> Dashboard </a> <% } %>
           <a href="/profile" class="list-group-item list-group-item-action bg-transparent text-light"><i class="fa-solid fa-user me-2"></i>Profile</a>
           <a href="/logout" class="list-group-item list-group-item-action bg-transparent text-danger"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a>
         <% } %>
