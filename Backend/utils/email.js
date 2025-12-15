@@ -55,27 +55,84 @@ async function sendMail({ to, subject, html }) {
 ================================================== */
 function emailTemplate({ title, message, buttonUrl, buttonLabel }) {
   return `
-  <div style="font-family:Arial; max-width:600px; margin:auto; padding:20px;
-       border:1px solid #ddd; border-radius:12px;">
-    <h2 style="text-align:center;">${title}</h2>
-    <p>${message}</p>
-    ${
-      buttonUrl
-        ? `<div style="text-align:center;margin:20px">
+  <div style="
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background:#f4f6fb;
+    padding:40px 0;
+  ">
+    <div style="
+      max-width:600px;
+      margin:auto;
+      background:#ffffff;
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:0 20px 40px rgba(0,0,0,0.08);
+    ">
+
+      <!-- HEADER -->
+      <div style="
+        background:linear-gradient(135deg,#6C63FF,#4f46e5);
+        padding:24px;
+        color:white;
+        text-align:center;
+      ">
+        <h1 style="margin:0;font-size:22px;">WanderNext</h1>
+        <p style="margin:6px 0 0;font-size:14px;opacity:.9;">
+          Discover your next stay
+        </p>
+      </div>
+
+      <!-- BODY -->
+      <div style="padding:30px;">
+        <h2 style="color:#111827;font-size:20px;margin-bottom:12px;">
+          ${title}
+        </h2>
+
+        <p style="color:#4b5563;font-size:15px;line-height:1.6;">
+          ${message}
+        </p>
+
+        ${
+          buttonUrl
+            ? `
+          <div style="text-align:center;margin:30px 0;">
             <a href="${buttonUrl}" style="
-              background:#ff385c;
+              display:inline-block;
+              background:linear-gradient(90deg,#6C63FF,#4f46e5);
               color:white;
-              padding:12px 24px;
-              border-radius:8px;
+              padding:14px 28px;
+              border-radius:999px;
+              font-size:15px;
+              font-weight:600;
               text-decoration:none;
-              font-weight:bold;">
+              box-shadow:0 10px 25px rgba(79,70,229,0.35);
+            ">
               ${buttonLabel}
             </a>
-          </div>`
-        : ""
-    }
-    <p style="text-align:center;color:#999">WanderNext © 2025</p>
-  </div>`;
+          </div>
+          `
+            : ""
+        }
+
+        <p style="font-size:13px;color:#9ca3af;">
+          If you didn’t request this, you can safely ignore this email.
+        </p>
+      </div>
+
+      <!-- FOOTER -->
+      <div style="
+        background:#f9fafb;
+        padding:16px;
+        text-align:center;
+        font-size:12px;
+        color:#9ca3af;
+      ">
+        © ${new Date().getFullYear()} WanderNext. All rights reserved.
+      </div>
+
+    </div>
+  </div>
+  `;
 }
 
 /* ==================================================
