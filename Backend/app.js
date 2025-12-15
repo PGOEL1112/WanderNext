@@ -191,6 +191,15 @@ app.get("/debug-email", async (req, res) => {
   }
 });
 
+app.get("/test-email", async (req, res) => {
+  const result = await sendMail({
+    to: "YOUR_PERSONAL_EMAIL@gmail.com",
+    subject: "Brevo SMTP Test",
+    html: "<h1>Email Working 🎉</h1>"
+  });
+
+  res.json(result);
+});
 
 // Attach Socket instance globally
 app.locals.io = io;

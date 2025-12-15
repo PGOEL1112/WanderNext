@@ -46,11 +46,18 @@ const transporter = nodemailer.createTransport({
   console.log("🧪 Using Ethereal (DEV)");
   const testAccount = await nodemailer.createTestAccount();
   const transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false,
-    auth: testAccount
-  });
+  host: process.env.SMTP_HOST,
+  port,
+  secure: false, // 587 ke liye false
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  },
+  connectionTimeout: 60_000,
+  greetingTimeout: 30_000,
+  socketTimeout: 60_000
+});
+
 
   cachedTransporter = transporter;
   return transporter;
