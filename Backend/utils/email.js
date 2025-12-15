@@ -1,31 +1,34 @@
 const axios = require("axios");
 
-/* --------------------------------------------------
-   SEND MAIL USING BREVO API (RENDER SAFE)
--------------------------------------------------- */
+/* ---------------------------------------
+   BREVO API CLIENT
+--------------------------------------- */
+const brevo = axios.create({
+  baseURL: "https://api.brevo.com/v3",
+  headers: {
+    "api-key": process.env.BREVO_API_KEY,
+    "Content-Type": "application/json",
+    accept: "application/json"
+  },
+  timeout: 15000
+});
+
+/* ---------------------------------------
+   SEND EMAIL (API BASED)
+--------------------------------------- */
 async function sendMail({ to, subject, html }) {
   try {
-    const res = await axios.post(
-      "https://api.brevo.com/v3/smtp/email",
-      {
-        sender: {
-          name: process.env.SENDER_NAME || "WanderNext",
-          email: process.env.SENDER_EMAIL
-        },
-        to: [{ email: to }],
-        subject,
-        htmlContent: html
+    const res = await brevo.post("/smtp/email", {
+      sender: {
+        name: process.env.SENDER_NAME || "WanderNext",
+        email: process.env.SENDER_EMAIL
       },
-      {
-        headers: {
-          "api-key": process.env.BREVO_API_KEY,
-          "Content-Type": "application/json"
-        },
-        timeout: 15000
-      }
-    );
+      to: [{ email: to }],
+      subject,
+      htmlContent: html
+    });
 
-    console.log("📧 Email sent via Brevo API:", res.data.messageId);
+    console.log("📧 Email sent:", res.data.messageId);
     return { success: true };
 
   } catch (err) {
@@ -33,24 +36,25 @@ async function sendMail({ to, subject, html }) {
       "❌ Brevo API email error:",
       err.response?.data || err.message
     );
-    return { success: false, error: err.message };
+    return { success: false, error: err.response?.data || err.message };
   }
 }
 
-/* --------------------------------------------------
+/* ---------------------------------------
    EMAIL TEMPLATE
--------------------------------------------------- */
+--------------------------------------- */
 function emailTemplate({ title, message, buttonUrl, buttonLabel }) {
   return `
-  <div style="font-family:Arial;max-width:600px;margin:auto;padding:20px;border:1px solid #ddd;border-radius:12px">
-    <h2 style="text-align:center">${title}</h2>
+  <div style="font-family:Arial; max-width:600px; margin:auto; padding:20px;
+       border:1px solid #ddd; border-radius:12px;">
+    <h2 style="text-align:center;">${title}</h2>
     <p>${message}</p>
     ${
       buttonUrl
         ? `<div style="text-align:center;margin:20px">
             <a href="${buttonUrl}" style="
               background:#ff385c;
-              color:#fff;
+              color:white;
               padding:12px 24px;
               border-radius:8px;
               text-decoration:none;
@@ -64,9 +68,9 @@ function emailTemplate({ title, message, buttonUrl, buttonLabel }) {
   </div>`;
 }
 
-/* --------------------------------------------------
+/* ---------------------------------------
    VERIFICATION EMAIL
--------------------------------------------------- */
+--------------------------------------- */
 async function sendVerificationEmail(user, token) {
   const url = `${process.env.BACKEND_URL}/verify-email/${token}`;
 
@@ -82,9 +86,9 @@ async function sendVerificationEmail(user, token) {
   });
 }
 
-/* --------------------------------------------------
+/* ---------------------------------------
    RESET PASSWORD EMAIL
--------------------------------------------------- */
+--------------------------------------- */
 async function sendResetEmail(user, token) {
   const url = `${process.env.BACKEND_URL}/reset-password/${token}`;
 
