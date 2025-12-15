@@ -1,79 +1,92 @@
 const express = require("express");
 const router = express.Router();
+
+// ===== MODELS =====
+const User = require("../models/user");
 const Listing = require("../models/listing");
 const Booking = require("../models/Booking");
+const Review = require("../models/reviews");
+const SupportTicket = require("../models/SupportTicket");
 
-
+// ===== MIDDLEWARE =====
 function isLoggedIn(req, res, next) {
-    if (!req.isAuthenticated()) return res.redirect("/login");
-    next();
+  if (!req.isAuthenticated()) {
+    req.flash("error", "Please login first");
+    return res.redirect("/login");
+  }
+  next();
 }
 
+function isAdmin(req, res, next) {
+  if (req.user.role !== "admin") {
+    req.flash("error", "Unauthorized access");
+    return res.redirect("/");
+  }
+  next();
+}
+
+/* =====================================================
+   USER DASHBOARD
+===================================================== */
 router.get("/user", isLoggedIn, async (req, res) => {
-    try {
-        if (req.user.role !== "user") return res.redirect("/");
+  if (req.user.role !== "user") return res.redirect("/");
 
-        const userId = req.user._id;
+  const userId = req.user._id;
 
-        // ====== FETCH STATS ======
+  try {
+    const [
+      totalBookings,
+      upcomingTrips,
+      user,
+      reviewCount
+    ] = await Promise.all([
+      Booking.countDocuments({ user: userId }),
+      Booking.countDocuments({
+        user: userId,
+        checkIn: { $gte: new Date() }
+      }),
+      User.findById(userId).populate("savedListings"),
+      Review.countDocuments({ author: userId })
+    ]);
 
-        // Total bookings
-        const totalBookings = await Booking.countDocuments({ user: userId });
+    res.render("dashboards/userDashboard", {
+      currentUser: req.user,
+      totalBookings,
+      upcomingTrips,
+      wishlistCount: user.savedListings.length,
+      reviewCount
+    });
 
-        // Upcoming trips
-        const upcomingTrips = await Booking.countDocuments({
-            user: userId,
-            checkIn: { $gte: new Date() }
-        });
-
-        // Wishlist count
-        const User = require("../models/user");
-        const user = await User.findById(userId).populate("savedListings");
-        const wishlistCount = user.savedListings.length;
-
-        // Reviews written
-        const Review = require("../models/reviews");
-        const reviewCount = await Review.countDocuments({ author: userId });
-
-        // Render dashboard
-        res.render("dashboards/userDashboard", {
-            currentUser: req.user,
-            totalBookings,
-            upcomingTrips,
-            wishlistCount,
-            reviewCount
-        });
-
-    } catch (err) {
-        console.log("❌ User dashboard error:", err);
-        req.flash("error", "Could not load user dashboard");
-        res.redirect("/");
-    }
+  } catch (err) {
+    console.error("❌ USER DASHBOARD ERROR:", err);
+    req.flash("error", "Unable to load user dashboard");
+    res.redirect("/");
+  }
 });
 
 
+/* =====================================================
+   OWNER DASHBOARD
+===================================================== */
 router.get("/owner", isLoggedIn, async (req, res) => {
-  try {
-    if (req.user.role !== "owner") {
-      return res.redirect("/");
-    }
+  if (req.user.role !== "owner") return res.redirect("/");
 
+  try {
     const ownerId = req.user._id;
 
-    // 👉 Fetch owner listings
+    // Owner listings
     const myListings = await Listing.find({ owner: ownerId }).lean();
-    const activeListings = myListings.length;
+    const listingIds = myListings.map(l => l._id);
 
-    // 👉 Fetch bookings for owner listings
+    // Bookings on owner listings
     const bookings = await Booking.find({
-      listing: { $in: myListings.map(l => l._id) }
+      listing: { $in: listingIds }
     })
       .populate("user", "username email")
       .populate("listing", "title location country")
       .sort({ createdAt: -1 })
       .lean();
 
-    // 👉 Stats
     const totalBookings = bookings.length;
 
     const totalRevenue = bookings
@@ -82,14 +95,14 @@ router.get("/owner", isLoggedIn, async (req, res) => {
 
     const today = new Date();
     const upcomingBookings = bookings.filter(
-      b => b.startDate > today && b.status !== "canceled"
+      b => b.checkIn > today && b.status !== "canceled"
     ).length;
 
-    const recentBookings = bookings.slice(0, 6); // last 6
+    const recentBookings = bookings.slice(0, 6);
 
-    return res.render("dashboards/ownerDashboard", {
+    res.render("dashboards/ownerDashboard", {
       currentUser: req.user,
-      activeListings,
+      activeListings: myListings.length,
       totalBookings,
       totalRevenue,
       upcomingBookings,
@@ -98,15 +111,12 @@ router.get("/owner", isLoggedIn, async (req, res) => {
     });
 
   } catch (err) {
-    console.log("🔥 OWNER DASHBOARD ERROR:", err);
-    req.flash("error", "Unable to load dashboard");
+    console.error("❌ OWNER DASHBOARD ERROR:", err);
+    req.flash("error", "Unable to load owner dashboard");
     res.redirect("/");
   }
 });
 
-router.get("/admin", isLoggedIn, (req, res) => {
-    if (req.user.role !== "admin") return res.redirect("/");
-    res.render("dashboards/adminDashboard", { currentUser: req.user });
-});
+
 
 module.exports = router;

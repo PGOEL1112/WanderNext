@@ -18,7 +18,6 @@
    html, body{
   height: 100%;
   margin: 0;
-  overflow-x: hidden;
   overflow-y: auto;   /* ONLY body scroll */
 }
 
@@ -30,6 +29,8 @@ main.site-main{
 body{
   position: relative;
   width: 100%;
+  overscroll-behavior-y: contain;
+  overflow-x: hidden;
 }
 
 
@@ -39,7 +40,6 @@ body{
 }
 *{
   box-sizing:border-box;
-    overscroll-behavior: contain;
 }
 
   /* ========================
@@ -151,13 +151,12 @@ body{
      RIGHT ACTIONS (NOTIF, LINKS, USER)
      ===================== */
  .actions{
-  display:inline-flex;
-  align-items:center;
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  min-width:100%;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
   gap:10px;
-  overflow-x:auto;
-  overflow-y:visible;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
 }
 
 .actions::-webkit-scrollbar{
@@ -166,6 +165,11 @@ body{
 
 .actions > *{
   flex:0 0 auto;
+}
+
+.actions > a,
+.actions > button{
+  white-space:nowrap;
 }
 
   .hamburger-btn{
@@ -230,7 +234,7 @@ body{
     display:flex; gap:10px; align-items:flex-start; padding:10px; border-bottom:1px solid rgba(255,255,255,0.03);
   }
   .notification-item:last-child{ border-bottom:none; }
-  .notification-message{ color: var(--panel) !important;; font-weight:700; font-size:.95rem; }
+  .notification-message{ color: var(--panel-text) !important;; font-weight:700; font-size:.95rem; }
   .notification-time{ font-size:.75rem; color:var(--panel-muted); margin-top:6px; }
 
   /* small delete button */
@@ -412,10 +416,11 @@ header.topbar{
 .header-left{ display:flex; align-items:center; }
 .header-center{ display:flex; justify-content:center; }
 .header-right{
-  display:block;
+  overflow-x:auto;
   overflow-y:hidden;
   white-space:nowrap;
-  position:relative;
+  -webkit-overflow-scrolling:touch;
+  touch-action: pan-x;
 }
 
 /* scrollbar hide */
@@ -515,7 +520,112 @@ header.topbar{
     min-width: 92vw !important;
     max-width: 92vw !important;
   }
+  
 }
+
+/* ===== FIX: DESKTOP NOTIFICATION CLIPPING ===== */
+.topbar,
+.dropdown {
+  overflow: visible !important;
+}
+
+/* Notifications dropdown proper layering */
+.notifications-menu{
+  position: absolute !important;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 9999;
+}
+
+.user-dropdown-menu{
+  min-width: 240px;
+}
+
+.user-dropdown-menu .dropdown-item{
+  padding:10px 14px;
+  font-weight:600;
+}
+
+/* ===== FIX: RESPONSIVE NOTIFICATION MESSAGE ===== */
+.notification-message{
+  color: var(--panel-text) !important;   /* readable on dark bg */
+  font-weight:600;
+  font-size:14px;
+  line-height:1.45;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.notification-item a{
+  display:block;
+}
+
+@media (max-width: 576px){
+  .notification-message{
+    font-size:13.5px;
+    line-height:1.5;
+    color: black !important;
+  }
+  .notifications-menu{
+    position: fixed !important;
+    bottom: 0;
+    top: auto !important;
+    left: 12rem !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-height: 60vh;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+/* ===== MOBILE NOTIFICATION LAYOUT FIX ===== */
+@media (max-width: 576px){
+
+  .notification-item{
+    flex-direction: column;
+    align-items: flex-start;
+    gap:6px;
+  }
+
+  .notification-item > div:last-child{
+    align-self: flex-end; /* delete button right side */
+  }
+
+  .notification-time{
+    margin-top:4px;
+  }
+}
+
+/* ===== DESKTOP NOTIFICATION FIX ===== */
+@media (min-width: 992px){
+  .notifications-menu{
+    position: fixed !important;
+    top: 72px !important;              /* header ke neeche */
+    right: 24px !important;            /* bell ke paas */
+    left: auto !important;
+    transform: none !important;
+    z-index: 99999 !important;
+  }
+
+  .user-dropdown-menu{
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    right: 0 !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 99999 !important;
+  }
+}
+
+/* ===== DESKTOP USER DROPDOWN VISIBILITY FIX ===== */
+/* ===== DESKTOP USER DROPDOWN – FINAL FIX ===== */
+@media (min-width: 992px){
+  .header-right,
+  .actions{
+    overflow: visible !important;
+  }
+}
+
 
 
   </style>
@@ -613,16 +723,45 @@ header.topbar{
             </div>
           </button>
 
-          <ul class="dropdown-menu dropdown-menu-end" style="min-width:220px;">
-            <% if (currentUser.role === 'admin') { %>
-              <li><a class="dropdown-item" href="/admin/dashboard"><i class="fa-solid fa-shield-halved me-2"></i> Dashboard</a></li>
-            <% } else { %>
-              <li><a class="dropdown-item" href="/dashboard/<%= currentUser.role %>"><i class="fa-solid fa-chart-line me-2"></i> Dashboard</a></li>
-            <% } %>
-            <li><a class="dropdown-item" href="/profile"><i class="fa-solid fa-user me-2"></i> Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</a></li>
-          </ul>
+          <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu">
+  
+  <% if (currentUser.role === 'admin') { %>
+    <li>
+      <a class="dropdown-item" href="/admin/dashboard">
+        <i class="fa-solid fa-shield-halved"></i> Admin Dashboard
+      </a>
+    </li>
+  <% } else { %>
+    <li>
+      <a class="dropdown-item" href="/dashboard/<%= currentUser.role %>">
+        <i class="fa-solid fa-chart-line"></i> Dashboard
+      </a>
+    </li>
+  <% } %>
+
+  <li>
+    <a class="dropdown-item" href="/profile">
+      <i class="fa-solid fa-user"></i> Profile
+    </a>
+  </li>
+
+  <% if (currentUser.role === 'user') { %>
+    <li>
+      <a class="dropdown-item" href="/saved">
+        <i class="fa-solid fa-heart"></i> Wishlist
+      </a>
+    </li>
+  <% } %>
+
+  <li><hr class="dropdown-divider"></li>
+
+  <li>
+    <a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </a>
+  </li>
+</ul>
+
         </div>
       <% } %>
     </div>

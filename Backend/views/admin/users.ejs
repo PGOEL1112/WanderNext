@@ -241,17 +241,23 @@
     overflow:visible;
   }
 
-  .custom-table,
+  /* ✅ TABLE should stay */
+  .custom-table{
+    display:block;
+    width:100%;
+  }
+
+  /* ❌ Hide only header */
   .custom-table thead{
     display:none;
   }
 
-  .custom-table tbody,
-  .custom-table tr{
+  .custom-table tbody{
     display:block;
   }
 
   .custom-table tr{
+    display:block;
     margin-bottom:16px;
     background:#ffffff;
     border-radius:14px;
@@ -290,6 +296,7 @@
     justify-content:center;
   }
 }
+
 
 
 /* --- Animations --- */

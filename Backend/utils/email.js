@@ -12,17 +12,18 @@ async function createTransporter() {
     process.env.SMTP_USER &&
     process.env.SMTP_PASS
   ) {
-    const isSecure = Number(process.env.SMTP_PORT) === 465;
+    const port = Number(process.env.SMTP_PORT) || 465;
+const isSecure = port === 465;
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: isSecure,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port,
+  secure: isSecure,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+});
 
     await transporter.verify();
     console.log("✅ SMTP connected successfully");
@@ -31,9 +32,16 @@ async function createTransporter() {
     return transporter;
   }
 
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("❌ SMTP not configured in production");
-  }
+  if (
+  process.env.NODE_ENV === "production" &&
+  (!process.env.SMTP_HOST ||
+   !process.env.SMTP_USER ||
+   !process.env.SMTP_PASS)
+) {
+  console.error("❌ SMTP missing in production");
+  return null;
+}
+
 
   console.log("🧪 Using Ethereal (DEV)");
   const testAccount = await nodemailer.createTestAccount();
@@ -69,10 +77,14 @@ async function sendMail({ to, subject, html }) {
 }
 
 
-    const transporter = await createTransporter();
+   const transporter = await createTransporter();
+if (!transporter) {
+  return { success: false, error: "SMTP not configured" };
+}
+
 
     const info = await transporter.sendMail({
-      from: `"WanderNext" <${process.env.SMTP_USER}>`,
+      from: `"WanderNext" <${process.env.SMTP_USER || "no-reply@wandernext.com"}>`,
       to,
       subject,
       html

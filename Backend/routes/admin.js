@@ -10,7 +10,7 @@ const SupportTicket = require("../models/SupportTicket");
 const { createNotification } = require("../utils/notify"); // ← use same helper as in bookings.js
 
 // ===================== ADMIN DASHBOARD =====================
-router.get("/dashboard", isLoggedIn, isAdmin, async (req, res, next) => {
+router.get("/", isLoggedIn, isAdmin, async (req, res, next) => {
   try {
     const [totalUsers, totalListings, totalBookings, paidAgg, openTickets] =
       await Promise.all([
