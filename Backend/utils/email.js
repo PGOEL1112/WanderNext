@@ -1,48 +1,58 @@
-const axios = require("axios");
+const nodemailer = require("nodemailer");
 
-/* ---------------------------------------
-   BREVO API CLIENT
---------------------------------------- */
-const brevo = axios.create({
-  baseURL: "https://api.brevo.com/v3",
-  headers: {
-    "api-key": process.env.BREVO_API_KEY,
-    "Content-Type": "application/json",
-    accept: "application/json"
-  },
-  timeout: 15000
-});
+let transporter;
 
-/* ---------------------------------------
-   SEND EMAIL (API BASED)
---------------------------------------- */
+/* ==================================================
+   CREATE BREVO SMTP TRANSPORTER
+================================================== */
+async function getTransporter() {
+  if (transporter) return transporter;
+
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,          // smtp-relay.brevo.com
+    port: Number(process.env.SMTP_PORT),  // 587
+    secure: false,                        // MUST be false for 587
+    auth: {
+      user: process.env.SMTP_USER,        // xxx@smtp-brevo.com
+      pass: process.env.SMTP_PASS         // SMTP KEY
+    },
+    connectionTimeout: 60_000,
+    greetingTimeout: 30_000,
+    socketTimeout: 60_000
+  });
+
+  await transporter.verify();
+  console.log("✅ Brevo SMTP connected successfully");
+
+  return transporter;
+}
+
+/* ==================================================
+   SEND MAIL
+================================================== */
 async function sendMail({ to, subject, html }) {
   try {
-    const res = await brevo.post("/smtp/email", {
-      sender: {
-        name: process.env.SENDER_NAME || "WanderNext",
-        email: process.env.SENDER_EMAIL
-      },
-      to: [{ email: to }],
+    const smtp = await getTransporter();
+
+    const info = await smtp.sendMail({
+      from: `"${process.env.SENDER_NAME}" <${process.env.SENDER_EMAIL}>`,
+      to,
       subject,
-      htmlContent: html
+      html
     });
 
-    console.log("📧 Email sent:", res.data.messageId);
+    console.log("📧 Email sent:", info.messageId);
     return { success: true };
 
   } catch (err) {
-    console.error(
-      "❌ Brevo API email error:",
-      err.response?.data || err.message
-    );
-    return { success: false, error: err.response?.data || err.message };
+    console.error("❌ Email error:", err.message);
+    return { success: false, error: err.message };
   }
 }
 
-/* ---------------------------------------
+/* ==================================================
    EMAIL TEMPLATE
---------------------------------------- */
+================================================== */
 function emailTemplate({ title, message, buttonUrl, buttonLabel }) {
   return `
   <div style="font-family:Arial; max-width:600px; margin:auto; padding:20px;
@@ -68,9 +78,9 @@ function emailTemplate({ title, message, buttonUrl, buttonLabel }) {
   </div>`;
 }
 
-/* ---------------------------------------
+/* ==================================================
    VERIFICATION EMAIL
---------------------------------------- */
+================================================== */
 async function sendVerificationEmail(user, token) {
   const url = `${process.env.BACKEND_URL}/verify-email/${token}`;
 
@@ -86,9 +96,9 @@ async function sendVerificationEmail(user, token) {
   });
 }
 
-/* ---------------------------------------
+/* ==================================================
    RESET PASSWORD EMAIL
---------------------------------------- */
+================================================== */
 async function sendResetEmail(user, token) {
   const url = `${process.env.BACKEND_URL}/reset-password/${token}`;
 
@@ -107,5 +117,6 @@ async function sendResetEmail(user, token) {
 module.exports = {
   sendMail,
   sendVerificationEmail,
-  sendResetEmail
+  sendResetEmail,
+  emailTemplate
 };
