@@ -64,27 +64,25 @@
           <% } else { users.forEach((user, idx) => { %>
 
             <tr class="table-row-hover">
-              <td><%= idx + 1 %></td>
+              <td data-label="#"> <%= idx + 1 %> </td>
 
-              <td class="username-cell">
+              <td data-label="Username" class="username-cell">
                 <i class="fa-solid fa-user-circle me-1 text-primary"></i>
                 <%= user.username %>
               </td>
 
-              <td>
+              <td data-label="Email">
                 <i class="fa-solid fa-envelope-open me-1 text-info"></i>
                 <%= user.email %>
               </td>
 
-              <td>
+              <td data-label="Role">
                 <form action="/admin/users/<%= user._id %>/role"
                       method="POST"
-                      class="d-flex align-items-center justify-content-center gap-2">
-
+                      class="d-flex justify-content-center">
                   <select name="role"
                           class="form-select form-select-sm premium-select"
                           onchange="this.form.submit()">
-
                     <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>User</option>
                     <option value="owner" <%= user.role === 'owner' ? 'selected' : '' %>>Owner</option>
                     <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
@@ -92,18 +90,17 @@
                 </form>
               </td>
 
-              <td>
+              <td data-label="Actions">
                 <form action="/admin/users/<%= user._id %>?_method=DELETE"
                       method="POST"
-                      onsubmit="return confirm('Are you sure you want to delete this user?');">
-
-                  <button class="action-btn delete-btn">
+                      onsubmit="return confirm('Delete this user?');">
+                  <button class="action-btn delete-btn w-100">
                     <i class="fa-solid fa-user-xmark"></i> Delete
                   </button>
-
                 </form>
               </td>
             </tr>
+
 
           <% }) } %>
         </tbody>
@@ -232,6 +229,68 @@
   box-shadow: 0 0 10px rgba(231,76,60,0.5);
   transform: translateY(-2px);
 }
+
+/* =========================
+   RESPONSIVE TABLE (MOBILE)
+========================= */
+
+@media (max-width: 768px){
+
+  .table-wrapper{
+    height:auto;
+    overflow:visible;
+  }
+
+  .custom-table,
+  .custom-table thead{
+    display:none;
+  }
+
+  .custom-table tbody,
+  .custom-table tr{
+    display:block;
+  }
+
+  .custom-table tr{
+    margin-bottom:16px;
+    background:#ffffff;
+    border-radius:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.08);
+    padding:12px;
+  }
+
+  .custom-table td{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 12px;
+    border:none;
+    background:transparent;
+    text-align:right;
+    font-size:0.9rem;
+  }
+
+  .custom-table td::before{
+    content: attr(data-label);
+    font-weight:700;
+    color:#1e3a8a;
+    text-align:left;
+  }
+
+  .username-cell{
+    font-weight:700;
+  }
+
+  .premium-select{
+    width:130px;
+  }
+
+  .action-btn{
+    width:100%;
+    justify-content:center;
+  }
+}
+
 
 /* --- Animations --- */
 @keyframes fadeIn {
