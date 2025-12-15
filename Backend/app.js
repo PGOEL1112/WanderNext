@@ -49,7 +49,7 @@ const dashboardRoutes = require("./routes/dashboard");
 const supportRoutes = require("./routes/support");
 const adminSupportRouter = require("./routes/adminSupport");
 const notificationRoutes = require("./routes/notifications");
-
+const { sendMail } = require("./utils/email");
 // ============================================
 // DATABASE CONNECTION
 // ============================================
@@ -176,6 +176,21 @@ app.use("/dashboard", dashboardRoutes);
 
 // RESET PASSWORD ROUTES
 app.use("/", resetPasswordRoutes);
+ // path adjust karo
+
+app.get("/debug-email", async (req, res) => {
+  try {
+    const r = await sendMail({
+      to: "your@email.com",   // apna email
+      subject: "SMTP DEBUG",
+      html: "<h2>SMTP is working</h2>"
+    });
+    res.json(r);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 
 // Attach Socket instance globally
 app.locals.io = io;

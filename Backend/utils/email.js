@@ -1,69 +1,84 @@
 const nodemailer = require('nodemailer');
+let cachedTransporter = null;
 
 // ------------------------------------------------------
 // CREATE TRANSPORTER (GMAIL SMTP OR ETHEREAL)
 // ------------------------------------------------------
 async function createTransporter() {
+  if (cachedTransporter) return cachedTransporter;
 
-  // If user has SMTP credentials → use Gmail
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  if (
+    process.env.SMTP_HOST &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASS
+  ) {
     const isSecure = Number(process.env.SMTP_PORT) === 465;
 
-    console.log("📨 Using SMTP:", process.env.SMTP_HOST, "PORT:", process.env.SMTP_PORT);
-
-    return nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: isSecure,                 // true → 465, false → 587
+      secure: isSecure,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
       }
     });
+
+    await transporter.verify();
+    console.log("✅ SMTP connected successfully");
+
+    cachedTransporter = transporter;
+    return transporter;
   }
 
-  // DEVELOPMENT MODE → USE ETHEREAL
-  console.log("🧪 No SMTP credentials found → Using Ethereal test email");
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("❌ SMTP not configured in production");
+  }
 
+  console.log("🧪 Using Ethereal (DEV)");
   const testAccount = await nodemailer.createTestAccount();
-
-  return nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
     port: 587,
     secure: false,
-    auth: { user: testAccount.user, pass: testAccount.pass }
+    auth: testAccount
   });
-}
 
+  cachedTransporter = transporter;
+  return transporter;
+}
 // ------------------------------------------------------
 // UNIVERSAL SEND MAIL FUNCTION
 // ------------------------------------------------------
 async function sendMail({ to, subject, html }) {
+  console.log("SMTP CHECK:", {
+    NODE_ENV: process.env.NODE_ENV,
+    HOST: process.env.SMTP_HOST,
+    PORT: process.env.SMTP_PORT,
+    USER: !!process.env.SMTP_USER,
+    PASS: !!process.env.SMTP_PASS
+  });
+
   try {
-    // IN DEVELOPMENT: Don't send Gmail email (faster)
-    if (process.env.NODE_ENV === "development") {
-      console.log("📧 DEV MODE: Email sending skipped");
-      console.log("TO:", to);
-      console.log("SUBJECT:", subject);
-      return { success: true, devSkipped: true };
-    }
+    if (
+  process.env.NODE_ENV === "development" &&
+  !process.env.SMTP_HOST
+) {
+  console.log("📧 DEV MODE → Email skipped");
+  return { success: true, devSkipped: true };
+}
+
 
     const transporter = await createTransporter();
 
     const info = await transporter.sendMail({
-      from: `"WanderNext" <${process.env.SMTP_USER || "no-reply@wander.com"}>`,
+      from: `"WanderNext" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html
     });
 
-    console.log("📧 Email Sent:", info.messageId);
-
-    // For ethereal preview
-    if (nodemailer.getTestMessageUrl(info)) {
-      console.log("🔗 Preview URL:", nodemailer.getTestMessageUrl(info));
-    }
-
+    console.log("📧 Email sent:", info.messageId);
     return { success: true };
 
   } catch (err) {
@@ -71,7 +86,6 @@ async function sendMail({ to, subject, html }) {
     return { success: false, error: err.message };
   }
 }
-
 // ------------------------------------------------------
 // EMAIL TEMPLATE
 // ------------------------------------------------------
