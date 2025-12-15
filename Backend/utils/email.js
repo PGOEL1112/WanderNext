@@ -83,12 +83,13 @@ if (!transporter) {
 }
 
 
-    const info = await transporter.sendMail({
-      from: `"WanderNext" <${process.env.SMTP_USER || "no-reply@wandernext.com"}>`,
-      to,
-      subject,
-      html
-    });
+   const info = await transporter.sendMail({
+  from: `"WanderNext" <${process.env.FROM_EMAIL}>`,
+  to,
+  subject,
+  html
+});
+
 
     console.log("📧 Email sent:", info.messageId);
     return { success: true };
