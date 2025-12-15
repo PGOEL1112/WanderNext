@@ -1,102 +1,45 @@
-const nodemailer = require('nodemailer');
-let cachedTransporter = null;
+const nodemailer = require("nodemailer");
 
-// ------------------------------------------------------
-// CREATE TRANSPORTER (GMAIL SMTP OR ETHEREAL)
-// ------------------------------------------------------
-async function createTransporter() {
-  if (cachedTransporter) return cachedTransporter;
+let transporter;
 
-  if (
-    process.env.SMTP_HOST &&
-    process.env.SMTP_USER &&
-    process.env.SMTP_PASS
-  ) {
-    const port = Number(process.env.SMTP_PORT) || 465;
-const isSecure = port === 465;
+/* --------------------------------------------------
+   CREATE SMTP TRANSPORTER (BREVO)
+-------------------------------------------------- */
+async function getTransporter() {
+  if (transporter) return transporter;
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port,
-  secure: isSecure,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
-
-    await transporter.verify();
-    console.log("✅ SMTP connected successfully");
-
-    cachedTransporter = transporter;
-    return transporter;
-  }
-
-  if (
-  process.env.NODE_ENV === "production" &&
-  (!process.env.SMTP_HOST ||
-   !process.env.SMTP_USER ||
-   !process.env.SMTP_PASS)
-) {
-  console.error("❌ SMTP missing in production");
-  return null;
-}
-
-
-  console.log("🧪 Using Ethereal (DEV)");
-  const testAccount = await nodemailer.createTestAccount();
-  const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port,
-  secure: false, // 587 ke liye false
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  },
-  connectionTimeout: 60_000,
-  greetingTimeout: 30_000,
-  socketTimeout: 60_000
-});
-
-
-  cachedTransporter = transporter;
-  return transporter;
-}
-// ------------------------------------------------------
-// UNIVERSAL SEND MAIL FUNCTION
-// ------------------------------------------------------
-async function sendMail({ to, subject, html }) {
-  console.log("SMTP CHECK:", {
-    NODE_ENV: process.env.NODE_ENV,
-    HOST: process.env.SMTP_HOST,
-    PORT: process.env.SMTP_PORT,
-    USER: !!process.env.SMTP_USER,
-    PASS: !!process.env.SMTP_PASS
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT), // 587
+    secure: false, // MUST be false for 587
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    },
+    connectionTimeout: 60_000,
+    greetingTimeout: 30_000,
+    socketTimeout: 60_000
   });
 
+  await transporter.verify();
+  console.log("✅ Brevo SMTP connected");
+
+  return transporter;
+}
+
+/* --------------------------------------------------
+   SEND MAIL
+-------------------------------------------------- */
+async function sendMail({ to, subject, html }) {
   try {
-    if (
-  process.env.NODE_ENV === "development" &&
-  !process.env.SMTP_HOST
-) {
-  console.log("📧 DEV MODE → Email skipped");
-  return { success: true, devSkipped: true };
-}
+    const smtp = await getTransporter();
 
-
-   const transporter = await createTransporter();
-if (!transporter) {
-  return { success: false, error: "SMTP not configured" };
-}
-
-
-   const info = await transporter.sendMail({
-  from: `"WanderNext" <${process.env.FROM_EMAIL}>`,
-  to,
-  subject,
-  html
-});
-
+    const info = await smtp.sendMail({
+      from: `"${process.env.SENDER_NAME}" <${process.env.SENDER_EMAIL}>`,
+      to,
+      subject,
+      html
+    });
 
     console.log("📧 Email sent:", info.messageId);
     return { success: true };
@@ -106,56 +49,56 @@ if (!transporter) {
     return { success: false, error: err.message };
   }
 }
-// ------------------------------------------------------
-// EMAIL TEMPLATE
-// ------------------------------------------------------
+
+/* --------------------------------------------------
+   EMAIL TEMPLATE
+-------------------------------------------------- */
 function emailTemplate({ title, message, buttonUrl, buttonLabel }) {
   return `
-    <div style="font-family:Arial; max-width:600px; margin:auto; padding:20px;
-         border:1px solid #ddd; border-radius:12px;">
-      
-      <h2 style="text-align:center; color:#333;">${title}</h2>
-
-      <p style="font-size:16px; color:#555;">${message}</p>
-
-      ${buttonUrl ? `
-        <div style="text-align:center; margin:25px 0;">
-          <a href="${buttonUrl}" style="
-              background:#ff385c; 
-              color:white; 
-              padding:12px 25px; 
+  <div style="font-family:Arial; max-width:600px; margin:auto; padding:20px;
+       border:1px solid #ddd; border-radius:12px;">
+    <h2 style="text-align:center;">${title}</h2>
+    <p>${message}</p>
+    ${
+      buttonUrl
+        ? `<div style="text-align:center;margin:20px">
+            <a href="${buttonUrl}" style="
+              background:#ff385c;
+              color:white;
+              padding:12px 24px;
               border-radius:8px;
-              font-weight:bold;
               text-decoration:none;
-          ">${buttonLabel}</a>
-        </div>
-      ` : ""}
-
-      <p style="text-align:center; color:#aaa;">WanderNext © 2025</p>
-    </div>`;
+              font-weight:bold;">
+              ${buttonLabel}
+            </a>
+          </div>`
+        : ""
+    }
+    <p style="text-align:center;color:#999">WanderNext © 2025</p>
+  </div>`;
 }
 
-// ------------------------------------------------------
-// VERIFICATION EMAIL
-// ------------------------------------------------------
+/* --------------------------------------------------
+   VERIFICATION EMAIL
+-------------------------------------------------- */
 async function sendVerificationEmail(user, token) {
   const url = `${process.env.BACKEND_URL}/verify-email/${token}`;
 
   return sendMail({
     to: user.email,
-    subject: "Verify your WanderNext Email",
+    subject: "Verify your WanderNext email",
     html: emailTemplate({
-      title: "Verify Your WanderNext Account",
-      message: `Hi ${user.username},<br>Please click the button below to verify your email.`,
+      title: "Verify Email",
+      message: `Hi ${user.username}, please verify your email.`,
       buttonUrl: url,
       buttonLabel: "Verify Email"
     })
   });
 }
 
-// ------------------------------------------------------
-// RESET PASSWORD EMAIL
-// ------------------------------------------------------
+/* --------------------------------------------------
+   RESET PASSWORD EMAIL
+-------------------------------------------------- */
 async function sendResetEmail(user, token) {
   const url = `${process.env.BACKEND_URL}/reset-password/${token}`;
 
@@ -164,7 +107,7 @@ async function sendResetEmail(user, token) {
     subject: "Reset your WanderNext password",
     html: emailTemplate({
       title: "Reset Password",
-      message: `Click the button below to reset your password.`,
+      message: "Click below to reset your password.",
       buttonUrl: url,
       buttonLabel: "Reset Password"
     })
@@ -172,8 +115,7 @@ async function sendResetEmail(user, token) {
 }
 
 module.exports = {
-  sendVerificationEmail,
-  sendResetEmail,
   sendMail,
-  emailTemplate
+  sendVerificationEmail,
+  sendResetEmail
 };
