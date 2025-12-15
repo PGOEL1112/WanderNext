@@ -263,7 +263,7 @@ router.post('/login', (req, res, next) => {
 
       await ActivityLog.create({ user: user._id, action: 'login', ip: req.ip });
 
-      if (user.role === 'admin') return res.redirect('/admin/dashboard');
+      if (user.role === 'admin') return res.redirect('/admin');
       if (user.role === 'owner') return res.redirect('/dashboard/owner');
       return res.redirect('/listings');
     });
