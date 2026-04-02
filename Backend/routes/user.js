@@ -374,7 +374,7 @@ router.get("/profile/edit", isLoggedIn, (req, res) => {
 router.post(
   "/profile/update",
   isLoggedIn,
-  upload.single("image"),
+  upload.single("profileImage"),
   async (req, res) => {
     try {
       const user = await User.findById(req.user._id);
