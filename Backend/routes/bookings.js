@@ -210,9 +210,9 @@ router.post('/verify-payment', isLoggedIn, async (req, res) => {
       guests,
       totalPrice,
       status: 'pending',           // owner will confirm later
-       paymentStatus: 'paid',
-        paymentId: razorpay_payment_id,
-        paymentOrderId: razorpay_order_id
+      paymentStatus: 'paid',
+      paymentId: razorpay_payment_id,
+      paymentOrderId: razorpay_order_id
     });
 
     await booking.save();
@@ -234,7 +234,7 @@ router.post('/verify-payment', isLoggedIn, async (req, res) => {
         })
       });
     }
-     
+
     await createNotification(
       req.user._id,
       `Your booking for "${listing.title}" has been created and is awaiting host confirmation.`,
@@ -395,13 +395,11 @@ router.patch('/:id/cancel', isLoggedIn, async (req, res) => {
           html: emailTemplate({
             title: "Booking Canceled",
             message: `Hi ${user.username || "Traveler"}, <br>
-              Your booking for <b>${booking.listing.title}</b> was canceled ${
-                isOwnerOfListing ? "by the host." : "by you."
+              Your booking for <b>${booking.listing.title}</b> was canceled ${isOwnerOfListing ? "by the host." : "by you."
               }<br>
-              ${
-                booking.paymentStatus === 'refunded'
-                  ? "Your refund has been initiated and will reflect in your account shortly."
-                  : "If any payment was made, applicable refund will be processed as per policy."
+              ${booking.paymentStatus === 'refunded'
+                ? "Your refund has been initiated and will reflect in your account shortly."
+                : "If any payment was made, applicable refund will be processed as per policy."
               }`,
             buttonUrl: `${process.env.FRONTEND_URL || ""}/bookings`,
             buttonLabel: "View Bookings"
@@ -464,15 +462,28 @@ router.get("/:id/invoice", isLoggedIn, async (req, res) => {
       .populate({ path: "listing", populate: { path: "owner" } })
       .populate("user");
 
+      if (!booking?.listing) {
+        req.flash("error", "Listing no longer exists");
+        return res.redirect("/bookings");
+      }
+
     if (!booking) {
       req.flash("error", "Booking not found");
       return res.redirect("/bookings");
     }
 
-    const isUser = booking.user._id.equals(req.user._id);
-    const isOwner = booking.listing.owner._id.equals(req.user._id);
-    const isAdmin = req.user.role === "admin";
+    if (!booking || !booking.listing || !booking.user) {
+      req.flash("error", "Invalid booking data ❌");
+      return res.redirect("/bookings");
+    }
 
+    const isUser = booking.user?._id?.equals(req.user._id);
+
+    const isOwner =
+      booking.listing?.owner?._id &&
+      booking.listing.owner._id.equals(req.user._id);
+
+    const isAdmin = req.user.role === "admin";
     if (!isUser && !isOwner && !isAdmin) {
       req.flash("error", "Not authorized");
       return res.redirect("/bookings");
@@ -653,7 +664,7 @@ router.get("/:id/invoice", isLoggedIn, async (req, res) => {
     // ---------- PROPERTY IMAGE ----------
     sectionTitle("PROPERTY IMAGE");
 
-    if (booking.listing.image?.url) {
+    if (booking.listing?.image?.url) {
       try {
         const imgResp = await axios.get(booking.listing.image.url, {
           responseType: "arraybuffer",
@@ -692,11 +703,9 @@ router.get("/:id/invoice", isLoggedIn, async (req, res) => {
     // ---------- QR CODE ----------
     sectionTitle("VERIFY INVOICE - QR CODE");
 
-    const qrText = `Invoice: ${booking._id} | User: ${
-      booking.user.email
-    } | Amount: ₹${booking.totalPrice} | Status: ${
-      booking.paymentStatus || "PAID"
-    }`;
+    const qrText = `Invoice: ${booking._id} | User: ${booking.user.email
+      } | Amount: ₹${booking.totalPrice} | Status: ${booking.paymentStatus || "PAID"
+      }`;
 
     const qrDataURL = await QRCode.toDataURL(qrText);
     const qrBuffer = Buffer.from(qrDataURL.split(",")[1], "base64");

@@ -5,14 +5,14 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 async function sendMail({ to, subject, html }) {
   try {
     console.log("📨 TRYING TO SEND EMAIL TO:", to);
-    const res = await resend.emails.send({
+    const response = await resend.emails.send({
       from: `${process.env.SENDER_NAME} <onboarding@resend.dev>`,
       to,
       subject,
       html
     });
 
-    console.log("📧 Email sent:",res.id);
+    console.log("📧 Email sent:",response);
     return { success: true };
 
   } catch (err) {
