@@ -1,5 +1,13 @@
 const Notification = require("../models/Notification");
-const appExports = require("../app");
+
+
+let ioInstance = null;
+
+// 👇 set from app.js
+function setIO(io) {
+  ioInstance = io;
+}
+
 
 async function createNotification(userId, message, link = "#") {
   try {
@@ -10,11 +18,8 @@ async function createNotification(userId, message, link = "#") {
       isRead: false,
     });
 
-    // yahan se ioInstance lo (live reference)
-    const io = appExports.ioInstance;
-
-    if (io) {
-      io.to(userId.toString()).emit("newNotification", {
+    if (ioInstance) {
+      ioInstance.to(userId.toString()).emit("newNotification", {
         _id: notif._id,
         message: notif.message,
         link: notif.link,
@@ -30,4 +35,4 @@ async function createNotification(userId, message, link = "#") {
   }
 }
 
-module.exports = { createNotification };
+module.exports = { createNotification, setIO };

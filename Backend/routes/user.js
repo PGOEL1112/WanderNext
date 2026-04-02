@@ -2,16 +2,16 @@ const express = require('express');
 const passport = require('passport');
 const router = express.Router();
 
-const OwnerRequest = require("../models/OwnerRequest");
 const User = require('../models/user');
+const wrapAsync = require('../utils/wrapAsync');
+const ActivityLog = require('../models/ActivityLog');
+const { sendOTPEmail } = require('../utils/email');
+
+const OwnerRequest = require("../models/OwnerRequest");
 const Booking = require('../models/Booking');
 const Review = require('../models/reviews');
 
-const wrapAsync = require('../utils/wrapAsync');
-const crypto = require('crypto');
-const { sendVerificationEmail } = require('../utils/email');
-const ActivityLog = require('../models/ActivityLog');
-const { isLoggedIn, isAdmin } = require('../middleware/roleMiddleware');
+const { isLoggedIn } = require('../middleware/roleMiddleware');
 const userController = require('../controllers/user');
 
 const { upload } = require("../middleware/multer");
@@ -21,42 +21,195 @@ const { createNotification } = require("../utils/notify");
 // =======================================================
 // REGISTER (ALWAYS as USER)
 // =======================================================
-
 router.get('/register', (req, res) => res.render('users/register'));
 
 router.post('/register', wrapAsync(async (req, res) => {
   let { username, email, password } = req.body;
 
-  // FORCE ROLE USER ⬇⬇⬇
-  const role = "user";
+  const existingUser = await User.findOne({ email });
 
-  const user = new User({ username, email, role });
-  const registeredUser = await User.register(user, password);
-
-  // Email verification token
-  const token = crypto.randomBytes(20).toString('hex');
-  registeredUser.verifyToken = token;
-  registeredUser.verifyTokenExpires = Date.now() + 86400000;
-  await registeredUser.save();
-
-  const emailResult = await sendVerificationEmail(registeredUser, token);
-
-  if (!emailResult.success) {
-    console.log("⚠ Verification email failed:", emailResult.error);
-
-    // DEV MODE auto-verify
-    if (process.env.NODE_ENV === "development") {
-      registeredUser.isVerified = true;
-      registeredUser.verifyToken = undefined;
-      registeredUser.verifyTokenExpires = undefined;
-      await registeredUser.save();
-    }
+  if (existingUser && existingUser.isVerified) {
+    req.flash('error', 'Email already registered. Please login.');
+    return res.redirect('/login');
   }
 
-  req.flash('success', 'Registration successful! Check email for verification.');
-  res.redirect('/login');
+  let user;
+
+  if (!existingUser) {
+    user = new User({ username, email, role: 'user' });
+    user = await User.register(user, password);
+  }
+  else {
+    const isMatch = await existingUser.authenticate(password);
+
+    if (!isMatch.user) {
+      req.flash('error', 'Incorrect Password');
+      return res.redirect('/login');
+    }
+    user = existingUser;
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  user.otp = otp;
+  user.otpExpires = Date.now() + 5 * 60 * 1000;
+  user.isVerified = false;
+
+  await user.save();
+
+  console.log("🔥 REGISTER HIT");
+  console.log("📧 Email:", user.email);
+  console.log("🔐 OTP:", otp);
+
+  // ✅ EMAIL SEND CHECK
+  const result = await sendOTPEmail(user, otp);
+
+  console.log("📨 OTP SEND RESULT:", result);
+
+  // ❌ agar mail fail hua
+  if (!result.success) {
+    req.flash('error', 'Email sending failed ❌ Check server logs');
+    return res.redirect('/register');
+  }
+
+  req.flash('success', 'OTP sent to your email ✅');
+  res.redirect(`/verify-otp?email=${email}`);
 }));
 
+router.post('/verify-otp', wrapAsync(async (req, res) => {
+  const { email, otp } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
+    req.flash('error', 'Invalid or expired OTP');
+    return res.redirect(`/verify-otp?email=${email}`);
+  }
+
+  if (user.otpExpires && user.otpExpires > Date.now() - 60000) {
+    req.flash('error', 'Wait before requesting new OTP');
+    return res.redirect(`/verify-otp?email=${email}`);
+  }
+
+  user.isVerified = true;
+  user.otp = undefined;
+  user.otpExpires = undefined;
+
+  await user.save();
+
+  req.login(user, (err) => {
+    if (err) return res.redirect('/login');
+
+    req.flash('success', 'Account verified successfully!');
+    res.redirect('/listings');
+  });
+}));
+
+router.post('/resend-otp', wrapAsync(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    req.flash('error', 'User not found');
+    return res.redirect('/register');
+  }
+  if (user.otpExpires && user.otpExpires > Date.now() - 60000) {
+    req.flash('error', 'Wait before requesting new OTP');
+    return res.redirect(`/verify-otp?email=${email}`);
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  user.otp = otp;
+  user.otpExpires = Date.now() + 5 * 60 * 1000;
+
+  await user.save();
+
+  await sendOTPEmail(user, otp);
+
+  req.flash('success', 'OTP resent');
+  res.redirect(`/verify-otp?email=${email}`);
+}));
+
+
+router.get('/login', (req, res) => res.render('users/login'));
+
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local', async (err, user, info) => {
+    if (err) return next(err);
+
+    if (!user) {
+      req.flash('error', info?.message || 'Invalid credentials');
+      return res.redirect('/login');
+    }
+
+    if (!user.isVerified) {
+      req.flash('error', 'Please verify your email first.');
+      return res.redirect('/login');
+    }
+
+    // User selects role but MUST match his DB role
+    const selectedRole = req.body.role;
+
+    if (user.role !== selectedRole) {
+      req.flash('error', `Access Denied. You are registered as ${user.role}.`);
+      return res.redirect('/login');
+    }
+
+    req.logIn(user, async (err) => {
+      if (err) return next(err);
+      console.log("User After Auth:", req.user);
+
+      user.lastLoginAt = new Date();
+      user.lastLoginIP = req.ip;
+      user.loginCount = (user.loginCount || 0) + 1;
+      await user.save();
+
+      await ActivityLog.create({ user: user._id, action: 'login', ip: req.ip });
+
+      if (user.role === 'admin') return res.redirect('/admin');
+      if (user.role === 'owner') return res.redirect('/dashboard/owner');
+      return res.redirect('/listings');
+    });
+  })(req, res, next);
+});
+
+router.post("/auth/google", async (req, res) => {
+  try {
+    const { email, username } = req.body;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        email,
+        username,
+        isVerified: true, // Google = auto verified
+        role: 'user' // default role
+      });
+
+      await User.register(user, Math.random().toString(36)); // dummy password
+    }
+
+    req.login(user, (err) => {
+      if (err) return res.json({ success: false });
+
+      return res.json({ success: true });
+    });
+
+  } catch (err) {
+    console.log("Google auth error:", err);
+    res.json({ success: false });
+  }
+});
+
+router.get('/logout', (req, res, next) => {
+  req.logout(function (err) {
+    if (err) return next(err);
+    req.flash('success', 'Logged out successfully');
+    res.redirect('/listings');
+  });
+});
 
 // =======================================================
 // BECOME OWNER PAGE
@@ -173,115 +326,6 @@ router.post("/become-owner", isLoggedIn, async (req, res) => {
 });
 
 
-// =======================================================
-// EMAIL VERIFY
-// =======================================================
-
-router.get('/verify-email/:token', wrapAsync(async (req, res) => {
-  const user = await User.findOne({
-    verifyToken: req.params.token,
-    verifyTokenExpires: { $gt: Date.now() }
-  });
-
-  if (!user) {
-    req.flash('error', 'Invalid or expired link.');
-    return res.redirect('/register');
-  }
-
-  user.isVerified = true;
-  user.verifyToken = undefined;
-  user.verifyTokenExpires = undefined;
-  await user.save();
-
-  req.flash('success', 'Email verified! Please login.');
-  res.redirect('/login');
-}));
-
-
-// =======================================================
-// RESEND VERIFY EMAIL
-// =======================================================
-
-router.post('/resend-verify', wrapAsync(async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
-
-  if (!user) {
-    req.flash('error', 'No account with that email.');
-    return res.redirect('/login');
-  }
-
-  if (user.isVerified) {
-    req.flash('info', 'Account already verified.');
-    return res.redirect('/login');
-  }
-
-  const token = crypto.randomBytes(20).toString('hex');
-  user.verifyToken = token;
-  user.verifyTokenExpires = Date.now() + 86400000;
-  await user.save();
-
-  await sendVerificationEmail(user, token);
-  req.flash('success', 'Verification email resent.');
-  res.redirect('/login');
-}));
-
-
-// =======================================================
-// LOGIN
-// =======================================================
-
-router.get('/login', (req, res) => res.render('users/login'));
-
-router.post('/login', (req, res, next) => {
-  passport.authenticate('local', async (err, user, info) => {
-    if (err) return next(err);
-    if (!user) {
-      req.flash('error', info?.message || 'Invalid credentials');
-      return res.redirect('/login');
-    }
-
-    if (!user.isVerified) {
-      req.flash('error', 'Please verify your email first.');
-      return res.redirect('/login');
-    }
-
-    // User selects role but MUST match his DB role
-    const selectedRole = req.body.role;
-
-    if (user.role !== selectedRole) {
-      req.flash('error', `Access Denied. You are registered as ${user.role}.`);
-      return res.redirect('/login');
-    }
-
-    req.logIn(user, async (err) => {
-      if (err) return next(err);
-
-      user.lastLoginAt = new Date();
-      user.lastLoginIP = req.ip;
-      user.loginCount = (user.loginCount || 0) + 1;
-      await user.save();
-
-      await ActivityLog.create({ user: user._id, action: 'login', ip: req.ip });
-
-      if (user.role === 'admin') return res.redirect('/admin');
-      if (user.role === 'owner') return res.redirect('/dashboard/owner');
-      return res.redirect('/listings');
-    });
-  })(req, res, next);
-});
-
-
-// =======================================================
-// LOGOUT
-// =======================================================
-
-router.get('/logout', (req, res, next) => {
-  req.logout(function(err) {
-    if (err) return next(err);
-    req.flash('success', 'Logged out successfully');
-    res.redirect('/listings');
-  });
-});
 
 
 // =======================================================
@@ -344,7 +388,7 @@ router.post(
         if (user.profileImage?.filename) {
           try {
             await cloudinary.uploader.destroy(user.profileImage.filename);
-          } catch {}
+          } catch { }
         }
 
         user.profileImage = {

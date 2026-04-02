@@ -70,6 +70,13 @@
         Login
       </button>
 
+      <hr style="margin: 18px 0;">
+
+      <button type="button" class="google-btn" onclick="googleLogin()">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="20">
+        Continue with Google
+      </button>
+
       <!-- Go to Register -->
       <a href="/register" class="wn-alt-btn" role="link">
         Don't have an account? Register
@@ -89,6 +96,49 @@ function toggleLoginPass() {
   } else {
     pass.type = "password";
     icon.classList.replace("fa-eye-slash", "fa-eye");
+  }
+}
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyCYMrqmyUU5E7pzHmxg2uFlvxyJMTHVe4g",
+    authDomain: "wandernext-4e434.firebaseapp.com",
+    projectId: "wandernext-4e434",
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+async function googleLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  try {
+    const result = await auth.signInWithPopup(provider);
+    const user = result.user;
+
+    const res = await fetch("/auth/google", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: user.email,
+        username: user.displayName
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      window.location.href = "/listings";
+    }
+
+  } catch (err) {
+    console.log(err);
+    alert("Google login failed");
   }
 }
 </script>
@@ -299,6 +349,23 @@ function toggleLoginPass() {
 }
 .wn-alt-btn:hover { transform: translateY(-2px); background: #fff; }
 
+.google-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-weight: 600;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  cursor:pointer;
+  transition: 0.2s;
+}
+.google-btn:hover {
+  background:#f3f4f6;
+}
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .wn-card { width: 92%; padding: 22px; }

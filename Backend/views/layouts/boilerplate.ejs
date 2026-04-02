@@ -34,6 +34,8 @@ body{
 }
 
 
+
+
 .row{
   margin-left:0 !important;
   margin-right:0 !important;
@@ -257,7 +259,7 @@ body{
   /* =====================
      FLASH / ALERTS
      ===================== */
-  .flash-area { max-width:1180px; margin:10px auto; padding:0 18px; }
+  .flash-area { max-width:1180px; margin:90px auto 80px; padding:0 18px; }
   .flash-success { background: linear-gradient(90deg, rgba(108,99,255,0.12), rgba(0,225,255,0.06)); color:#0b0b0b; border-left:4px solid var(--accent); }
   .flash-error { background: linear-gradient(90deg, rgba(255,69,96,0.06), rgba(108,99,255,0.02)); color:#0b0b0b; border-left:4px solid #ff516e; }
 
@@ -662,7 +664,7 @@ header.topbar{
       <button class="hamburger-btn d-inline d-lg-none me-1" id="hamburgerToggle" aria-label="Open menu">
         <i class="fa-solid fa-bars"></i>
       </button>
-
+      <%= currentUser ? currentUser.username : "NO USER" %>
       <% if (currentUser) { %>
         <!-- notifications -->
         <div class="dropdown">

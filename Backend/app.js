@@ -1,8 +1,5 @@
-// ============================================
-// Load .env (Only in development)
-// ============================================
 if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config({ path: "./Backend/.env" });
+  require("dotenv").config();
 }
 
 const express = require("express");
@@ -19,11 +16,19 @@ const LocalStrategy = require("passport-local");
 const http = require("http");
 const { Server } = require("socket.io");
 
+
 // Express + Socket Server
 const app = express();
 app.set("trust proxy", 1);
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server,{
+  cors:{
+    origin:"*"
+  }
+});
+
+const { setIO } = require("./utils/notify");
+setIO(io);
 
 // MODELS
 const User = require("./models/user");
@@ -46,11 +51,10 @@ const ownerRoutes = require("./routes/owner");
 const bookingRoutes = require("./routes/bookings");
 const wishlistRoutes = require("./routes/wishlist");
 const dashboardRoutes = require("./routes/dashboard");
-
 const supportRoutes = require("./routes/support");
 const adminSupportRouter = require("./routes/adminSupport");
 const notificationRoutes = require("./routes/notifications");
-const { sendMail } = require("./utils/email");
+
 // ============================================
 // DATABASE CONNECTION
 // ============================================
@@ -60,15 +64,18 @@ if (!dbUrl) {
   console.error("❌ ERROR: ATLAS_DB_URL missing from .env");
   process.exit(1);
 }
-
 mongoose
   .connect(dbUrl)
-  .then(() => console.log("✅ MongoDB Connected Successfully"))
+  .then(() => {
+    console.log("✅ MongoDB Connected Successfully");
+
+    runAutoUpdate();
+    setInterval(runAutoUpdate, 10 * 60 * 1000); // har 10 min
+  })
   .catch((err) => {
     console.error("❌ MongoDB Error:", err.message);
     process.exit(1);
   });
-
 // ============================================
 // APP CONFIG
 // ============================================
@@ -81,12 +88,6 @@ app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Auto-update bookings
-setInterval(runAutoUpdate, 10 * 60 * 1000);
-
-// ============================================
-// SESSION CONFIG
-// ============================================
 const store = MongoStore.create({
   mongoUrl: dbUrl,
   collectionName: "sessions",
@@ -97,20 +98,18 @@ store.on("error", (e) => console.log("⚠ Session Store Error", e));
 app.use(
   session({
     store,
-    secret: process.env.SECRET || "supersecret",
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
+      secure: true,
       maxAge: 1000 * 60 * 60 * 24 * 7,
     },
   })
 );
 
 app.use(flash());
-// ============================================
-// PASSPORT AUTH
-// ============================================
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
@@ -130,12 +129,7 @@ app.use((req, res, next) => {
 
 // Global Notification Loader
 app.use(fetchNotifications);
-
-// ============================================
-// RATE LIMITER
-// ============================================
-app.use("/login", rateLimiter);
-app.use("/forgot-password", rateLimiter);
+app.use(rateLimiter);
 
 // ============================================
 // ROUTES START HERE
@@ -178,20 +172,10 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/", resetPasswordRoutes);
  // path adjust karo
 
-
-// Attach Socket instance globally
-app.locals.io = io;
-
-// ============================================
-// 404 HANDLER
-// ============================================
 app.use((req, res, next) => {
   next(new ExpressError(404, "Page Not Found"));
 });
-
-// ============================================
-// ERROR HANDLER
-// ============================================
+                                                                                                                                                                          
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
   const { statusCode = 500 } = err;
@@ -225,15 +209,7 @@ io.on("connection", (socket) => {
   });
 });
 
-module.exports.ioInstance = io;
-
-// ============================================
-// START SERVER
-// ============================================
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
-
-// Run booking auto-update immediately
-runAutoUpdate();

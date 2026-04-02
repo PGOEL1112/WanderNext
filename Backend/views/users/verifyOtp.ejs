@@ -1,0 +1,185 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+:root {
+  --primary: #6366f1;
+  --accent: #ec4899;
+}
+
+/* Background */
+.otp-bg {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+}
+
+/* Card */
+.otp-card {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(18px);
+  padding: 35px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  color: white;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity:0; transform: translateY(20px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+.otp-card h2 {
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.otp-card p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 20px;
+}
+
+/* OTP INPUTS */
+.otp-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.otp-inputs input {
+  width: 45px;
+  height: 55px;
+  font-size: 1.5rem;
+  text-align: center;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-weight: bold;
+}
+
+/* BUTTON */
+.verify-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.verify-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* RESEND */
+.resend {
+  margin-top: 15px;
+  font-size: 0.9rem;
+}
+
+.resend button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.timer {
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+</style>
+
+
+<div class="otp-bg">
+
+  <div class="otp-card">
+    
+    <h2>🔐 Verify OTP</h2>
+    <p>Enter the 6-digit code sent to your email</p>
+
+    <!-- VERIFY FORM -->
+    <form method="POST" action="/verify-otp" id="otpForm">
+      <input type="hidden" name="email" value="<%= email %>">
+      <input type="hidden" name="otp" id="otpHidden">
+
+      <div class="otp-inputs">
+        <input maxlength="1" type="text" required>
+        <input maxlength="1" type="text" required>
+        <input maxlength="1" type="text" required>
+        <input maxlength="1" type="text" required>
+        <input maxlength="1" type="text" required>
+        <input maxlength="1" type="text" required>
+      </div>
+
+      <button class="verify-btn">Verify</button>
+    </form>
+
+    <!-- RESEND -->
+    <div class="resend">
+      <span id="timerText">Resend OTP in <span id="timer">30</span>s</span>
+
+      <form method="POST" action="/resend-otp" id="resendForm" style="display:none;">
+        <input type="hidden" name="email" value="<%= email %>">
+        <button type="submit">Resend OTP</button>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+const inputs = document.querySelectorAll(".otp-inputs input");
+const hiddenInput = document.getElementById("otpHidden");
+
+// Auto move input
+inputs.forEach((input, i) => {
+  input.addEventListener("input", () => {
+    if (input.value && i < inputs.length - 1) {
+      inputs[i + 1].focus();
+    }
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace" && !input.value && i > 0) {
+      inputs[i - 1].focus();
+    }
+  });
+});
+
+// Combine OTP
+document.getElementById("otpForm").addEventListener("submit", () => {
+  hiddenInput.value = Array.from(inputs).map(i => i.value).join("");
+});
+
+// TIMER
+let time = 30;
+const timer = document.getElementById("timer");
+const resendForm = document.getElementById("resendForm");
+const timerText = document.getElementById("timerText");
+
+const interval = setInterval(() => {
+  time--;
+  timer.innerText = time;
+
+  if (time <= 0) {
+    clearInterval(interval);
+    timerText.style.display = "none";
+    resendForm.style.display = "block";
+  }
+}, 1000);
+</script>

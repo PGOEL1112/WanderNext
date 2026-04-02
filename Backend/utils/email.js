@@ -1,47 +1,18 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-let transporter;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-/* ==================================================
-   CREATE BREVO SMTP TRANSPORTER
-================================================== */
-async function getTransporter() {
-  if (transporter) return transporter;
-
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,          // smtp-relay.brevo.com
-    port: Number(process.env.SMTP_PORT),  // 587
-    secure: false,                        // MUST be false for 587
-    auth: {
-      user: process.env.SMTP_USER,        // xxx@smtp-brevo.com
-      pass: process.env.SMTP_PASS         // SMTP KEY
-    },
-    connectionTimeout: 60_000,
-    greetingTimeout: 30_000,
-    socketTimeout: 60_000
-  });
-
-  await transporter.verify();
-  console.log("✅ Brevo SMTP connected successfully");
-
-  return transporter;
-}
-
-/* ==================================================
-   SEND MAIL
-================================================== */
 async function sendMail({ to, subject, html }) {
   try {
-    const smtp = await getTransporter();
-
-    const info = await smtp.sendMail({
-      from: `"${process.env.SENDER_NAME}" <${process.env.SENDER_EMAIL}>`,
+    console.log("📨 TRYING TO SEND EMAIL TO:", to);
+    const res = await resend.emails.send({
+      from: `${process.env.SENDER_NAME} <onboarding@resend.dev>`,
       to,
       subject,
       html
     });
 
-    console.log("📧 Email sent:", info.messageId);
+    console.log("📧 Email sent:",res.id);
     return { success: true };
 
   } catch (err) {
@@ -135,6 +106,17 @@ function emailTemplate({ title, message, buttonUrl, buttonLabel }) {
   `;
 }
 
+async function sendOTPEmail(user, otp) {
+  return sendMail({
+    to: user.email,
+    subject: "Your OTP Code",
+    html: emailTemplate({
+      title: "Verify Your Email",
+      message: `Hi ${user.username}, your OTP is <b>${otp}</b>. Valid for 5 minutes.`,
+    })
+  });
+}
+
 /* ==================================================
    VERIFICATION EMAIL
 ================================================== */
@@ -161,7 +143,7 @@ async function sendResetEmail(user, token) {
 
   return sendMail({
     to: user.email,
-    subject: "Reset your WanderNext password",
+    subject: "Reset your password",
     html: emailTemplate({
       title: "Reset Password",
       message: "Click below to reset your password.",
@@ -173,6 +155,7 @@ async function sendResetEmail(user, token) {
 
 module.exports = {
   sendMail,
+  sendOTPEmail,
   sendVerificationEmail,
   sendResetEmail,
   emailTemplate
