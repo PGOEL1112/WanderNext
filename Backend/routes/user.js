@@ -75,6 +75,18 @@ router.post('/register', wrapAsync(async (req, res) => {
   res.redirect(`/verify-otp?email=${email}`);
 }));
 
+router.get('/verify-otp', (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    req.flash("error", "Invalid request");
+    return res.redirect("/register");
+  }
+
+  res.render("users/verifyOtp", { email });
+});
+
+
 router.post('/verify-otp', wrapAsync(async (req, res) => {
   const { email, otp } = req.body;
 
@@ -82,11 +94,6 @@ router.post('/verify-otp', wrapAsync(async (req, res) => {
 
   if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
     req.flash('error', 'Invalid or expired OTP');
-    return res.redirect(`/verify-otp?email=${email}`);
-  }
-
-  if (user.otpExpires && user.otpExpires > Date.now() - 60000) {
-    req.flash('error', 'Wait before requesting new OTP');
     return res.redirect(`/verify-otp?email=${email}`);
   }
 
